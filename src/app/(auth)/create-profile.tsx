@@ -116,7 +116,7 @@ export default function CreateProfile() {
       if (error) throw error;
 
       setProfile(data);
-      router.replace("/(tabs)");
+      router.replace("/");
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to save profile.";
@@ -127,7 +127,7 @@ export default function CreateProfile() {
   };
 
   const handleSkip = () => {
-    router.replace("/(tabs)");
+    router.replace("/");
   };
 
   return (

@@ -71,7 +71,7 @@ function AuthGuard() {
     if (!session && !inAuthGroup) {
       router.replace("/(auth)/sign-in");
     } else if (session && inAuthGroup && !onCreateProfile) {
-      router.replace("/(tabs)");
+      router.replace("/");
     }
   }, [session, isLoading, segments]);
 
