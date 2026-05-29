@@ -47,7 +47,7 @@ export default function Verify() {
     const trimmedCode = code.trim();
 
     if (!trimmedCode || trimmedCode.length < 6) {
-      setError("Enter the 6-digit code from your email.");
+      setError("Enter the verification code from your email.");
       return;
     }
 
@@ -107,11 +107,11 @@ export default function Verify() {
             Check your email
           </Text>
           <Text className="mt-2 text-base leading-relaxed text-brown-muted dark:text-[#9A8A82]">
-            We sent a 6-digit code to{" "}
+            We sent a verification code to{" "}
             <Text className="font-medium text-brown-deep dark:text-offwhite">
               {email}
             </Text>
-            . It expires in 5 minutes.
+            . Enter it below to confirm your account.
           </Text>
         </View>
 
@@ -128,11 +128,11 @@ export default function Verify() {
             label="Verification code"
             placeholder="123456"
             value={code}
-            onChangeText={(text) => setCode(text.replace(/\D/g, "").slice(0, 6))}
+            onChangeText={(text) => setCode(text.replace(/\D/g, "").slice(0, 8))}
             keyboardType="number-pad"
-            maxLength={6}
+            maxLength={8}
             autoFocus
-            hint="Enter the 6-digit code from your email"
+            hint="Enter the code from your email"
           />
 
           <Button
@@ -140,6 +140,7 @@ export default function Verify() {
             onPress={handleVerify}
             loading={loading}
             disabled={code.trim().length < 6}
+
           />
 
           {/* Resend */}
