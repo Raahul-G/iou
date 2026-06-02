@@ -75,6 +75,19 @@ export default function SignUp() {
     setGoogleLoading(true);
 
     try {
+      // Web: full-page redirect — browser handles the OAuth flow natively.
+      if (Platform.OS === "web") {
+        const redirectTo =
+          typeof window !== "undefined" ? window.location.origin : undefined;
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo },
+        });
+        if (error) throw error;
+        return;
+      }
+
+      // Android: open OAuth URL in an in-app browser and capture the redirect.
       const redirectUrl = Linking.createURL("/");
 
       const { data, error } = await supabase.auth.signInWithOAuth({
