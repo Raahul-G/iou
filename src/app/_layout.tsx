@@ -1,11 +1,11 @@
 import "../global.css";
 import { useEffect } from "react";
-import { Slot, useRouter, useSegments } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import * as Linking from "expo-linking";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { useColorScheme } from "react-native";
+import { Appearance, Platform, useColorScheme } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/query-client";
 import { useAuthStore } from "@/store/auth.store";
@@ -48,8 +48,18 @@ function AuthGuard() {
             .eq("id", newSession.user.id)
             .single();
           setProfile(profile);
+          if (profile?.theme_preference === "light" || profile?.theme_preference === "dark") {
+            Appearance.setColorScheme(profile.theme_preference);
+          } else {
+            // "system" — remove override so OS preference takes effect (iOS only; Android rejects null)
+            if (Platform.OS !== "android") {
+              (Appearance.setColorScheme as (s: string | null) => void)(null);
+            }
+          }
         } else {
           reset();
+          // Auth screens always show in light mode — reset any previous user's theme override
+          Appearance.setColorScheme("light");
         }
 
         setLoading(false);
@@ -84,7 +94,7 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthGuard />
-      <Slot />
+      <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }} />
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
     </QueryClientProvider>
   );
