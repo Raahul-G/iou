@@ -66,30 +66,44 @@ function AuthGuard() {
   // Listen for Supabase auth state changes — handles login, logout, and auto-login on restart
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
-        try {
-          setSession(newSession);
+      (_event, newSession) => {
+        // Synchronously update the session so the route guard and data queries
+        // can fire immediately. Do NOT await anything before unlocking here —
+        // if the profile fetch (below) hangs (e.g. Supabase token-refresh lock
+        // on a hard refresh), keeping setLoading(false) inside a finally block
+        // of an awaited call means SplashScreen.hideAsync() is never called and
+        // the app is permanently stuck on the splash/loading screen.
+        setSession(newSession);
 
-          if (newSession?.user) {
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("*")
-              .eq("id", newSession.user.id)
-              .single();
-            setProfile(profile);
-            applyTheme(
-              (profile?.theme_preference as "light" | "dark" | "system") ?? "system"
-            );
-          } else {
-            reset();
-            // Auth screens always show in light mode — reset any previous user's theme override
-            applyTheme("light");
-            // Clear inactivity timestamp so the next login starts fresh
-            if (Platform.OS === "web" && typeof window !== "undefined") {
-              localStorage.removeItem(LAST_ACTIVITY_KEY);
-            }
+        if (newSession?.user) {
+          setLoading(false);
+          SplashScreen.hideAsync();
+
+          // Fetch profile in the background — does not block the route guard.
+          supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", newSession.user.id)
+            .single()
+            .then(({ data: profile }) => {
+              if (profile) {
+                setProfile(profile);
+                applyTheme(
+                  (profile.theme_preference as "light" | "dark" | "system") ?? "system"
+                );
+              }
+            })
+            .catch(() => {
+              // Non-critical: app is usable without profile. Theme stays default.
+            });
+        } else {
+          reset();
+          // Auth screens always show in light mode — reset any previous user's theme override
+          applyTheme("light");
+          // Clear inactivity timestamp so the next login starts fresh
+          if (Platform.OS === "web" && typeof window !== "undefined") {
+            localStorage.removeItem(LAST_ACTIVITY_KEY);
           }
-        } finally {
           setLoading(false);
           SplashScreen.hideAsync();
         }
