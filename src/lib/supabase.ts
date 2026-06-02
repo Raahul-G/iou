@@ -1,7 +1,6 @@
 import "react-native-url-polyfill/auto";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
-import { Platform } from "react-native";
 import { Database } from "@/types/database.types";
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
@@ -13,29 +12,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// Web export runs in a Node.js SSR context where `window` / `localStorage` don't exist.
-// Guard every localStorage access so the module loads safely during static generation,
-// then works normally in the browser at runtime.
-const webStorage = {
-  getItem: (key: string) =>
-    Promise.resolve(typeof window !== "undefined" ? localStorage.getItem(key) : null),
-  setItem: (key: string, value: string) => {
-    if (typeof window !== "undefined") localStorage.setItem(key, value);
-    return Promise.resolve();
-  },
-  removeItem: (key: string) => {
-    if (typeof window !== "undefined") localStorage.removeItem(key);
-    return Promise.resolve();
-  },
-};
-
-const storage = Platform.OS === "web" ? webStorage : AsyncStorage;
-
+// Native-only Supabase client.
+// Metro automatically picks supabase.web.ts for web builds, so this file
+// is never bundled on web — safe to import AsyncStorage and the URL polyfill here.
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage,
+    storage: AsyncStorage,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: Platform.OS === "web",
+    detectSessionInUrl: false,
   },
 });

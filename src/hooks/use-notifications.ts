@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
+import { NOTIF_FETCH_LIMIT } from "@/constants/app";
 
 export type AppNotification = {
   id: string;
@@ -34,7 +35,7 @@ export function useNotifications() {
         .select("*")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false })
-        .limit(50);
+        .limit(NOTIF_FETCH_LIMIT);
 
       if (error) throw error;
       return (data ?? []) as AppNotification[];

@@ -21,17 +21,7 @@ import {
   useMarkAllRead,
   type AppNotification,
 } from "@/hooks/use-notifications";
-
-const NOTIF_ICONS: Record<AppNotification["type"], string> = {
-  friend_request: "🤝",
-  friend_request_accepted: "✅",
-  iou_created: "📬",
-  iou_accepted: "👍",
-  iou_declined: "❌",
-  iou_completion_requested: "🔔",
-  iou_completion_rejected: "↩️",
-  iou_completed: "🎉",
-};
+import { NOTIF_ICONS } from "@/constants/app";
 
 function RequestCard({
   request,
@@ -154,10 +144,12 @@ export default function Notifications() {
   const respond = useRespondToRequest();
   const markAllRead = useMarkAllRead();
 
-  // Mark all as read when the tab gains focus
+  // Mark all as read when the tab gains focus — skip if a request is already in flight.
   useFocusEffect(
     useCallback(() => {
-      markAllRead.mutate();
+      if (!markAllRead.isPending) {
+        markAllRead.mutate();
+      }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   );

@@ -10,8 +10,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const RESEND_COOLDOWN = 60; // seconds
+import { RESEND_COOLDOWN_SECS } from "@/constants/app";
 
 export default function Verify() {
   const { email } = useLocalSearchParams<{ email: string }>();
@@ -31,7 +30,7 @@ export default function Verify() {
   }, []);
 
   const startCooldown = () => {
-    setCooldown(RESEND_COOLDOWN);
+    setCooldown(RESEND_COOLDOWN_SECS);
     timerRef.current = setInterval(() => {
       setCooldown((prev) => {
         if (prev <= 1) {

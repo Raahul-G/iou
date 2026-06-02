@@ -60,6 +60,7 @@ export default function CreateProfile() {
     const fileName = `${user.id}/avatar.${ext}`;
 
     const response = await fetch(uri);
+    if (!response.ok) throw new Error("Failed to read image file.");
     const blob = await response.blob();
 
     const { error } = await supabase.storage

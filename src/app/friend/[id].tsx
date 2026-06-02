@@ -14,15 +14,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { useIOUs, useBalance, useScores, useUpdateIOUStatus, type IOU } from "@/hooks/use-ious";
 import { useSetNickname } from "@/hooks/use-friends";
 import { Button } from "@/components/ui/button";
-
-const CATEGORIES: Record<string, string> = {
-  coffee: "☕",
-  food: "🍕",
-  drinks: "🍺",
-  favour: "🤝",
-  money: "💰",
-  other: "✨",
-};
+import { CATEGORY_EMOJI } from "@/constants/app";
 
 function IOUCard({
   iou,
@@ -34,7 +26,7 @@ function IOUCard({
   onAction: (id: string, status: IOU["status"]) => void;
 }) {
   const iAmCreator = iou.creator_id === myId;
-  const emoji = iou.category ? (CATEGORIES[iou.category] ?? "✨") : "✨";
+  const emoji = iou.category ? (CATEGORY_EMOJI[iou.category] ?? "✨") : "✨";
 
   const statusLabel = {
     pending: iAmCreator ? "Awaiting acceptance" : "Wants to owe you",
@@ -118,6 +110,7 @@ export default function FriendDetail() {
   const setNicknameMutation = useSetNickname();
 
   const [actionError, setActionError] = useState<string | null>(null);
+  const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [nicknameEditing, setNicknameEditing] = useState(false);
   const [nicknameInput, setNicknameInput] = useState(initNickname ?? "");
   const [currentNickname, setCurrentNickname] = useState<string | null>(
@@ -139,12 +132,13 @@ export default function FriendDetail() {
   };
 
   const saveNickname = async (value: string | null) => {
+    setNicknameError(null);
     try {
       await setNicknameMutation.mutateAsync({ friendshipId: id, nickname: value, isUserA });
       setCurrentNickname(value);
       setNicknameEditing(false);
-    } catch {
-      // silent — mutation error won't break the screen
+    } catch (err: unknown) {
+      setNicknameError(err instanceof Error ? err.message : "Failed to save nickname.");
     }
   };
 
@@ -180,6 +174,9 @@ export default function FriendDetail() {
               )}
 
               {/* Nickname edit */}
+              {nicknameError && (
+                <Text className="text-xs text-red-500 mt-1">{nicknameError}</Text>
+              )}
               {nicknameEditing ? (
                 <View className="flex-row items-center gap-2 mt-1.5">
                   <TextInput

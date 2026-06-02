@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
-import { Appearance, Platform } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
+import { applyTheme } from "@/lib/theme";
 
 export function useUpdateProfile() {
   const { user, setProfile } = useAuthStore();
@@ -24,15 +24,12 @@ export function useUpdateProfile() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       setProfile(data);
-      if (data.theme_preference === "light" || data.theme_preference === "dark") {
-        Appearance.setColorScheme(data.theme_preference);
-      } else {
-        // "system" — null only supported on iOS; Android and web both reject it
-        if (Platform.OS === "ios") {
-          (Appearance.setColorScheme as (s: string | null) => void)(null);
-        }
+      if (variables.theme_preference !== undefined) {
+        applyTheme(
+          (data.theme_preference as "light" | "dark" | "system") ?? "system"
+        );
       }
     },
   });
@@ -57,6 +54,7 @@ export function useUploadAvatar() {
       const path = `${user!.id}/avatar.${ext}`;
 
       const response = await fetch(asset.uri);
+      if (!response.ok) throw new Error("Failed to read image file.");
       const blob = await response.blob();
 
       const { error: uploadError } = await supabase.storage

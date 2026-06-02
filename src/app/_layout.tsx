@@ -5,10 +5,11 @@ import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import * as Linking from "expo-linking";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Appearance, Platform, useColorScheme } from "react-native";
+import { Platform, useColorScheme } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/query-client";
 import { useAuthStore } from "@/store/auth.store";
+import { applyTheme } from "@/lib/theme";
 
 const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
 const LAST_ACTIVITY_KEY = "iou_last_activity";
@@ -50,8 +51,7 @@ function AuthGuard() {
   useEffect(() => {
     const handleUrl = async ({ url }: { url: string }) => {
       if (url.includes("code=") || url.includes("access_token")) {
-        const { error } = await supabase.auth.exchangeCodeForSession(url);
-        if (error) console.warn("OAuth exchange error:", error.message);
+        await supabase.auth.exchangeCodeForSession(url);
       }
     };
 
@@ -77,18 +77,13 @@ function AuthGuard() {
               .eq("id", newSession.user.id)
               .single();
             setProfile(profile);
-            if (profile?.theme_preference === "light" || profile?.theme_preference === "dark") {
-              Appearance.setColorScheme(profile.theme_preference);
-            } else {
-              // "system" — null only supported on iOS; Android and web both reject it
-              if (Platform.OS === "ios") {
-                (Appearance.setColorScheme as (s: string | null) => void)(null);
-              }
-            }
+            applyTheme(
+              (profile?.theme_preference as "light" | "dark" | "system") ?? "system"
+            );
           } else {
             reset();
             // Auth screens always show in light mode — reset any previous user's theme override
-            Appearance.setColorScheme("light");
+            applyTheme("light");
             // Clear inactivity timestamp so the next login starts fresh
             if (Platform.OS === "web" && typeof window !== "undefined") {
               localStorage.removeItem(LAST_ACTIVITY_KEY);

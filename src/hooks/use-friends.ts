@@ -89,23 +89,6 @@ export function usePendingRequests() {
   });
 }
 
-export function useSearchUser(email: string) {
-  return useQuery({
-    queryKey: ["search-user", email],
-    enabled: email.length > 3,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, display_name, profile_pic_url")
-        .ilike("id", "%") // need to search via auth email
-        .limit(1);
-
-      if (error) throw error;
-      return data?.[0] ?? null;
-    },
-  });
-}
-
 export function useSendFriendRequest() {
   const qc = useQueryClient();
   const { user } = useAuthStore();

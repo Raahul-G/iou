@@ -40,11 +40,19 @@ export default function Settings() {
   };
 
   const handleTheme = async (value: ThemeOption) => {
-    await updateProfile.mutateAsync({ theme_preference: value });
+    try {
+      await updateProfile.mutateAsync({ theme_preference: value });
+    } catch {
+      // UI reflects profile state — if mutation fails, button reverts automatically.
+    }
   };
 
   const handleNotifToggle = async (value: boolean) => {
-    await updateProfile.mutateAsync({ notifications_enabled: value });
+    try {
+      await updateProfile.mutateAsync({ notifications_enabled: value });
+    } catch {
+      // UI reflects profile state — if mutation fails, toggle reverts automatically.
+    }
   };
 
   const handleLogout = () => {

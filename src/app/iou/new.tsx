@@ -10,15 +10,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useCreateIOU } from "@/hooks/use-ious";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const CATEGORIES = [
-  { key: "coffee", label: "Coffee", emoji: "☕" },
-  { key: "food", label: "Food", emoji: "🍕" },
-  { key: "drinks", label: "Drinks", emoji: "🍺" },
-  { key: "favour", label: "Favour", emoji: "🤝" },
-  { key: "money", label: "Money", emoji: "💰" },
-  { key: "other", label: "Other", emoji: "✨" },
-];
+import { CATEGORIES } from "@/constants/app";
 
 export default function NewIOU() {
   const { friendshipId, friendId, friendName } = useLocalSearchParams<{
