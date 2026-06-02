@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Image,
+  Platform,
   Pressable,
   ScrollView,
   Switch,
@@ -21,6 +22,14 @@ export default function Settings() {
 
   const [displayName, setDisplayName] = useState(profile?.display_name ?? "");
   const [nameError, setNameError] = useState<string | null>(null);
+
+  // Profile loads async after mount (background fetch in _layout.tsx).
+  // Sync the input field when it arrives so it isn't blank on hard refresh.
+  useEffect(() => {
+    if (profile?.display_name) {
+      setDisplayName(profile.display_name);
+    }
+  }, [profile?.display_name]);
 
   const updateProfile = useUpdateProfile();
   const uploadAvatar = useUploadAvatar();
@@ -56,6 +65,13 @@ export default function Settings() {
   };
 
   const handleLogout = () => {
+    // Alert.alert is not implemented in React Native Web — use window.confirm on web.
+    if (Platform.OS === "web") {
+      if (typeof window !== "undefined" && window.confirm("Are you sure you want to log out?")) {
+        supabase.auth.signOut();
+      }
+      return;
+    }
     Alert.alert("Log out", "Are you sure you want to log out?", [
       { text: "Cancel", style: "cancel" },
       {
