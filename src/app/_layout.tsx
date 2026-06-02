@@ -68,35 +68,37 @@ function AuthGuard() {
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
-        setSession(newSession);
+        try {
+          setSession(newSession);
 
-        if (newSession?.user) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", newSession.user.id)
-            .single();
-          setProfile(profile);
-          if (profile?.theme_preference === "light" || profile?.theme_preference === "dark") {
-            Appearance.setColorScheme(profile.theme_preference);
+          if (newSession?.user) {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("*")
+              .eq("id", newSession.user.id)
+              .single();
+            setProfile(profile);
+            if (profile?.theme_preference === "light" || profile?.theme_preference === "dark") {
+              Appearance.setColorScheme(profile.theme_preference);
+            } else {
+              // "system" — null only supported on iOS; Android and web both reject it
+              if (Platform.OS === "ios") {
+                (Appearance.setColorScheme as (s: string | null) => void)(null);
+              }
+            }
           } else {
-            // "system" — remove override so OS preference takes effect (iOS only; Android rejects null)
-            if (Platform.OS !== "android") {
-              (Appearance.setColorScheme as (s: string | null) => void)(null);
+            reset();
+            // Auth screens always show in light mode — reset any previous user's theme override
+            Appearance.setColorScheme("light");
+            // Clear inactivity timestamp so the next login starts fresh
+            if (Platform.OS === "web" && typeof window !== "undefined") {
+              localStorage.removeItem(LAST_ACTIVITY_KEY);
             }
           }
-        } else {
-          reset();
-          // Auth screens always show in light mode — reset any previous user's theme override
-          Appearance.setColorScheme("light");
-          // Clear inactivity timestamp so the next login starts fresh
-          if (Platform.OS === "web" && typeof window !== "undefined") {
-            localStorage.removeItem(LAST_ACTIVITY_KEY);
-          }
+        } finally {
+          setLoading(false);
+          SplashScreen.hideAsync();
         }
-
-        setLoading(false);
-        SplashScreen.hideAsync();
       }
     );
 

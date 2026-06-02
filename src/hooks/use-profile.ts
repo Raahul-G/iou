@@ -29,8 +29,8 @@ export function useUpdateProfile() {
       if (data.theme_preference === "light" || data.theme_preference === "dark") {
         Appearance.setColorScheme(data.theme_preference);
       } else {
-        // "system" — Android rejects null, iOS accepts it
-        if (Platform.OS !== "android") {
+        // "system" — null only supported on iOS; Android and web both reject it
+        if (Platform.OS === "ios") {
           (Appearance.setColorScheme as (s: string | null) => void)(null);
         }
       }
