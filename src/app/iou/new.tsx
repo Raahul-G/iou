@@ -50,7 +50,7 @@ export default function NewIOU() {
   return (
     <View className="flex-1 bg-cream dark:bg-bark">
       {/* Header */}
-      <View className="flex-row items-center gap-3 px-5 pt-14 pb-4 border-b border-sand dark:border-[#2A1E18]">
+      <View className="flex-row items-center gap-3 px-5 pt-14 pb-4 border-b border-sand dark:border-[#3D2B3D]">
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <Text className="text-base text-brown-warm dark:text-umber">Cancel</Text>
         </Pressable>
@@ -67,7 +67,7 @@ export default function NewIOU() {
       >
         {/* Who owes who */}
         <View className="rounded-xl bg-sand/50 dark:bg-bark-card px-4 py-3">
-          <Text className="text-sm text-brown-muted dark:text-[#9A8A82]">
+          <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
             You owe{" "}
             <Text className="font-semibold text-brown-deep dark:text-offwhite">
               {friendName}
@@ -101,7 +101,7 @@ export default function NewIOU() {
                 className={`flex-row items-center gap-1.5 px-3 py-2 rounded-full border ${
                   category === cat.key
                     ? "bg-brown-warm dark:bg-umber border-brown-warm dark:border-umber"
-                    : "bg-white dark:bg-bark-card border-sand dark:border-[#2A1E18]"
+                    : "bg-white dark:bg-bark-card border-sand dark:border-[#3D2B3D]"
                 }`}
               >
                 <Text>{cat.emoji}</Text>
@@ -123,7 +123,7 @@ export default function NewIOU() {
         <View className="gap-1.5">
           <Text className="text-sm font-medium text-brown-deep dark:text-offwhite">
             Note{" "}
-            <Text className="text-brown-muted dark:text-[#9A8A82] font-normal">
+            <Text className="text-brown-muted dark:text-[#8A7385] font-normal">
               (optional)
             </Text>
           </Text>
@@ -131,11 +131,11 @@ export default function NewIOU() {
             value={note}
             onChangeText={setNote}
             placeholder="Add context…"
-            placeholderTextColor="#8A7A74"
+            placeholderTextColor="#8C7676"
             multiline
             numberOfLines={3}
             maxLength={200}
-            className="bg-white dark:bg-bark-card border border-sand dark:border-[#2A1E18] rounded-xl px-4 py-3 text-base text-brown-deep dark:text-offwhite min-h-[80px]"
+            className="bg-white dark:bg-bark-card border border-sand dark:border-[#3D2B3D] rounded-xl px-4 py-3 text-base text-brown-deep dark:text-offwhite min-h-[80px]"
             style={{ textAlignVertical: "top" }}
           />
         </View>

@@ -80,7 +80,7 @@ export default function SearchScreen() {
   return (
     <View className="flex-1 bg-cream dark:bg-bark">
       {/* Header */}
-      <View className="flex-row items-center gap-3 px-5 pt-14 pb-4 border-b border-sand dark:border-[#2A1E18]">
+      <View className="flex-row items-center gap-3 px-5 pt-14 pb-4 border-b border-sand dark:border-[#3D2B3D]">
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <Text className="text-base text-brown-warm dark:text-umber">← Back</Text>
         </Pressable>
@@ -116,7 +116,7 @@ export default function SearchScreen() {
             <Text className="text-base font-medium text-brown-deep dark:text-offwhite">
               No user found
             </Text>
-            <Text className="text-sm text-brown-muted dark:text-[#9A8A82] text-center">
+            <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center">
               Make sure they've signed up for IOU with that email.
             </Text>
           </View>
@@ -131,7 +131,7 @@ export default function SearchScreen() {
                   className="w-12 h-12 rounded-full bg-sand"
                 />
               ) : (
-                <View className="w-12 h-12 rounded-full bg-sand dark:bg-[#2A1E18] items-center justify-center">
+                <View className="w-12 h-12 rounded-full bg-sand dark:bg-[#3D2B3D] items-center justify-center">
                   <Text className="text-xl">👤</Text>
                 </View>
               )}
@@ -139,7 +139,7 @@ export default function SearchScreen() {
                 <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
                   {result.display_name}
                 </Text>
-                <Text className="text-sm text-brown-muted dark:text-[#9A8A82]">
+                <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
                   {email.trim().toLowerCase()}
                 </Text>
               </View>

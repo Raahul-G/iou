@@ -39,7 +39,7 @@ function IOUCard({
   const isActive = ["pending", "accepted", "completion_requested"].includes(iou.status);
 
   return (
-    <View className={`rounded-xl px-4 py-4 gap-2 ${isActive ? "bg-white dark:bg-bark-card" : "bg-sand/30 dark:bg-[#1E1410]"} border border-sand dark:border-[#2A1E18]`}>
+    <View className={`rounded-xl px-4 py-4 gap-2 ${isActive ? "bg-white dark:bg-bark-card" : "bg-sand/30 dark:bg-[#160F16]"} border border-sand dark:border-[#3D2B3D]`}>
       <View className="flex-row items-start gap-3">
         <Text className="text-2xl">{emoji}</Text>
         <View className="flex-1">
@@ -47,11 +47,11 @@ function IOUCard({
             {iou.title}
           </Text>
           {iou.note && (
-            <Text className="text-sm text-brown-muted dark:text-[#9A8A82] mt-0.5">
+            <Text className="text-sm text-brown-muted dark:text-[#8A7385] mt-0.5">
               {iou.note}
             </Text>
           )}
-          <Text className="text-xs text-brown-muted dark:text-[#9A8A82] mt-1">
+          <Text className="text-xs text-brown-muted dark:text-[#8A7385] mt-1">
             {statusLabel}
           </Text>
         </View>
@@ -145,7 +145,7 @@ export default function FriendDetail() {
   return (
     <View className="flex-1 bg-cream dark:bg-bark">
       {/* Header */}
-      <View className="px-5 pt-14 pb-4 border-b border-sand dark:border-[#2A1E18]">
+      <View className="px-5 pt-14 pb-4 border-b border-sand dark:border-[#3D2B3D]">
         <View className="flex-row items-center gap-3 mb-4">
           <Pressable onPress={() => router.back()} hitSlop={8}>
             <Text className="text-base text-brown-warm dark:text-umber">← Back</Text>
@@ -156,7 +156,7 @@ export default function FriendDetail() {
             {pic ? (
               <Image source={{ uri: pic }} className="w-12 h-12 rounded-full bg-sand" />
             ) : (
-              <View className="w-12 h-12 rounded-full bg-sand dark:bg-[#2A1E18] items-center justify-center">
+              <View className="w-12 h-12 rounded-full bg-sand dark:bg-[#3D2B3D] items-center justify-center">
                 <Text className="text-xl">👤</Text>
               </View>
             )}
@@ -165,7 +165,7 @@ export default function FriendDetail() {
                 {currentNickname || name}
               </Text>
               {balance && (
-                <Text className="text-sm text-brown-muted dark:text-[#9A8A82]">
+                <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
                   {balance.i_owe > 0 && `You owe ${balance.i_owe}`}
                   {balance.i_owe > 0 && balance.they_owe > 0 && " · "}
                   {balance.they_owe > 0 && `They owe ${balance.they_owe}`}
@@ -183,10 +183,10 @@ export default function FriendDetail() {
                     value={nicknameInput}
                     onChangeText={setNicknameInput}
                     placeholder="Add a nickname…"
-                    placeholderTextColor="#8A7A74"
+                    placeholderTextColor="#8C7676"
                     maxLength={30}
                     autoFocus
-                    className="flex-1 text-xs text-brown-deep dark:text-offwhite bg-sand/50 dark:bg-[#2A1E18] rounded-lg px-2.5 py-1.5 border border-sand dark:border-[#3A2A20]"
+                    className="flex-1 text-xs text-brown-deep dark:text-offwhite bg-sand/50 dark:bg-[#3D2B3D] rounded-lg px-2.5 py-1.5 border border-sand dark:border-[#4A354A]"
                   />
                   <Pressable
                     onPress={() => saveNickname(nicknameInput.trim() || null)}
@@ -206,7 +206,7 @@ export default function FriendDetail() {
                     </Pressable>
                   )}
                   <Pressable onPress={() => setNicknameEditing(false)} hitSlop={8}>
-                    <Text className="text-xs text-brown-muted dark:text-[#9A8A82]">Cancel</Text>
+                    <Text className="text-xs text-brown-muted dark:text-[#8A7385]">Cancel</Text>
                   </Pressable>
                 </View>
               ) : (
@@ -218,7 +218,7 @@ export default function FriendDetail() {
                   hitSlop={8}
                   className="flex-row items-center gap-1 mt-1"
                 >
-                  <Text className="text-xs text-brown-muted dark:text-[#9A8A82]">
+                  <Text className="text-xs text-brown-muted dark:text-[#8A7385]">
                     {currentNickname ? `"${currentNickname}" ✏️` : "Add nickname ✏️"}
                   </Text>
                 </Pressable>
@@ -275,7 +275,7 @@ export default function FriendDetail() {
             {/* Active IOUs */}
             {active.length > 0 && (
               <View className="gap-3">
-                <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#9A8A82]">
+                <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
                   Active
                 </Text>
                 {active.map((iou) => (
@@ -292,7 +292,7 @@ export default function FriendDetail() {
             {/* History */}
             {history.length > 0 && (
               <View className="gap-3">
-                <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#9A8A82]">
+                <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
                   History
                 </Text>
                 {history.map((iou) => (
@@ -312,7 +312,7 @@ export default function FriendDetail() {
                 <Text className="text-base font-medium text-brown-deep dark:text-offwhite">
                   No IOUs yet
                 </Text>
-                <Text className="text-sm text-brown-muted dark:text-[#9A8A82] text-center">
+                <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center">
                   Tap + IOU to create the first one.
                 </Text>
               </View>

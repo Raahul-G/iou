@@ -133,7 +133,7 @@ export default function SignUp() {
           <Text className="text-5xl font-semibold tracking-tight text-brown-deep dark:text-offwhite">
             IOU
           </Text>
-          <Text className="mt-1 text-base text-brown-muted dark:text-[#9A8A82]">
+          <Text className="mt-1 text-base text-brown-muted dark:text-[#8A7385]">
             Start tracking favours
           </Text>
         </View>
@@ -196,7 +196,7 @@ export default function SignUp() {
         </View>
 
         <View className="mt-8 flex-row items-center justify-center gap-1">
-          <Text className="text-sm text-brown-muted dark:text-[#9A8A82]">
+          <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
             Already have an account?
           </Text>
           <Pressable onPress={() => router.back()} hitSlop={8}>

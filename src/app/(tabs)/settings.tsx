@@ -105,7 +105,7 @@ export default function Settings() {
                 className="w-20 h-20 rounded-full bg-sand"
               />
             ) : (
-              <View className="w-20 h-20 rounded-full bg-sand dark:bg-[#2A1E18] items-center justify-center">
+              <View className="w-20 h-20 rounded-full bg-sand dark:bg-[#3D2B3D] items-center justify-center">
                 <Text className="text-3xl">👤</Text>
               </View>
             )}
@@ -115,7 +115,7 @@ export default function Settings() {
           </View>
         </Pressable>
         {uploadAvatar.isPending && (
-          <Text className="text-xs text-brown-muted dark:text-[#9A8A82]">
+          <Text className="text-xs text-brown-muted dark:text-[#8A7385]">
             Uploading…
           </Text>
         )}
@@ -125,8 +125,8 @@ export default function Settings() {
       </View>
 
       {/* Display name */}
-      <View className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#2A1E18] gap-3">
-        <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#9A8A82]">
+      <View className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#3D2B3D] gap-3">
+        <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
           Display name
         </Text>
         <Input
@@ -147,8 +147,8 @@ export default function Settings() {
       </View>
 
       {/* Theme */}
-      <View className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#2A1E18] gap-3">
-        <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#9A8A82]">
+      <View className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#3D2B3D] gap-3">
+        <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
           Appearance
         </Text>
         <View className="flex-row gap-2">
@@ -159,7 +159,7 @@ export default function Settings() {
               className={`flex-1 py-2.5 rounded-xl items-center border ${
                 theme === opt
                   ? "bg-brown-warm dark:bg-umber border-brown-warm dark:border-umber"
-                  : "bg-sand/30 dark:bg-[#1E1410] border-sand dark:border-[#2A1E18]"
+                  : "bg-sand/30 dark:bg-[#160F16] border-sand dark:border-[#3D2B3D]"
               }`}
             >
               <Text
@@ -169,7 +169,7 @@ export default function Settings() {
                     : "text-brown-deep dark:text-offwhite"
                 }`}
               >
-                {opt === "system" ? "Auto" : opt.charAt(0).toUpperCase() + opt.slice(1)}
+                {opt === "system" ? "Auto" : opt === "light" ? "Morning Coffee" : "Midnight Snuggle"}
               </Text>
             </Pressable>
           ))}
@@ -177,19 +177,19 @@ export default function Settings() {
       </View>
 
       {/* Notifications toggle */}
-      <View className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#2A1E18] flex-row items-center justify-between">
+      <View className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#3D2B3D] flex-row items-center justify-between">
         <View>
           <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
             Notifications
           </Text>
-          <Text className="text-xs text-brown-muted dark:text-[#9A8A82] mt-0.5">
+          <Text className="text-xs text-brown-muted dark:text-[#8A7385] mt-0.5">
             Friend requests, IOU updates
           </Text>
         </View>
         <Switch
           value={notifsEnabled}
           onValueChange={handleNotifToggle}
-          trackColor={{ true: "#8B6347" }}
+          trackColor={{ true: "#D4A5A5" }}
           thumbColor="#fff"
         />
       </View>
@@ -197,7 +197,7 @@ export default function Settings() {
       {/* Logout */}
       <Pressable
         onPress={handleLogout}
-        className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#2A1E18] items-center"
+        className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#3D2B3D] items-center"
       >
         <Text className="text-base font-semibold text-red-500">Log out</Text>
       </Pressable>

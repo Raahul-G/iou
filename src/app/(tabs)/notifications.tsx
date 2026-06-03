@@ -36,7 +36,7 @@ function RequestCard({
   };
 
   return (
-    <View className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 gap-3 border border-sand dark:border-[#2A1E18]">
+    <View className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 gap-3 border border-sand dark:border-[#3D2B3D]">
       <View className="flex-row items-center gap-3">
         {sender.profile_pic_url ? (
           <Image
@@ -44,7 +44,7 @@ function RequestCard({
             className="w-11 h-11 rounded-full bg-sand"
           />
         ) : (
-          <View className="w-11 h-11 rounded-full bg-sand dark:bg-[#2A1E18] items-center justify-center">
+          <View className="w-11 h-11 rounded-full bg-sand dark:bg-[#3D2B3D] items-center justify-center">
             <Text className="text-lg">👤</Text>
           </View>
         )}
@@ -52,7 +52,7 @@ function RequestCard({
           <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
             {sender.display_name}
           </Text>
-          <Text className="text-sm text-brown-muted dark:text-[#9A8A82]">
+          <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
             Wants to be friends
           </Text>
         </View>
@@ -69,9 +69,9 @@ function RequestCard({
         <View className="flex-1">
           <Pressable
             onPress={() => onRespond(request.id, false)}
-            className="bg-sand/50 dark:bg-[#2A1E18] rounded-xl py-2.5 items-center border border-sand dark:border-[#3A2A20]"
+            className="bg-sand/50 dark:bg-[#3D2B3D] rounded-xl py-2.5 items-center border border-sand dark:border-[#4A354A]"
           >
-            <Text className="text-sm font-semibold text-brown-muted dark:text-[#9A8A82]">
+            <Text className="text-sm font-semibold text-brown-muted dark:text-[#8A7385]">
               Decline
             </Text>
           </Pressable>
@@ -103,8 +103,8 @@ function NotifCard({
       onPress={onPress}
       className={`flex-row items-start gap-3 px-4 py-3 rounded-xl border ${
         notif.is_read
-          ? "bg-white/50 dark:bg-bark-card/50 border-sand/50 dark:border-[#2A1E18]/50"
-          : "bg-white dark:bg-bark-card border-sand dark:border-[#2A1E18]"
+          ? "bg-white/50 dark:bg-bark-card/50 border-sand/50 dark:border-[#3D2B3D]/50"
+          : "bg-white dark:bg-bark-card border-sand dark:border-[#3D2B3D]"
       }`}
     >
       <Text className="text-xl mt-0.5">{icon}</Text>
@@ -113,12 +113,12 @@ function NotifCard({
           {notif.title}
         </Text>
         {notif.message ? (
-          <Text className="text-xs text-brown-muted dark:text-[#9A8A82] mt-0.5">
+          <Text className="text-xs text-brown-muted dark:text-[#8A7385] mt-0.5">
             {notif.message}
           </Text>
         ) : null}
       </View>
-      <Text className="text-xs text-brown-muted dark:text-[#9A8A82] mt-0.5">
+      <Text className="text-xs text-brown-muted dark:text-[#8A7385] mt-0.5">
         {timeAgo}
       </Text>
     </Pressable>
@@ -255,7 +255,7 @@ export default function Notifications() {
           <Text className="text-base font-medium text-brown-deep dark:text-offwhite">
             All caught up
           </Text>
-          <Text className="text-sm text-brown-muted dark:text-[#9A8A82]">
+          <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
             No pending notifications.
           </Text>
         </View>
@@ -264,7 +264,7 @@ export default function Notifications() {
           {/* Pending friend requests — actionable */}
           {requests && requests.length > 0 && (
             <View className="gap-3">
-              <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#9A8A82]">
+              <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
                 Friend requests
               </Text>
               {requests.map((r) => (
@@ -276,7 +276,7 @@ export default function Notifications() {
           {/* Activity feed */}
           {activity.length > 0 && (
             <View className="gap-2">
-              <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#9A8A82]">
+              <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
                 Activity
               </Text>
               {activity.map((n) => (

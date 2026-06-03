@@ -22,12 +22,12 @@ export function Button({
   const isDisabled = disabled || loading;
 
   const base =
-    "flex-row items-center justify-center rounded-lg py-4 px-6 active:opacity-75";
+    "flex-row items-center justify-center rounded-xl py-4 px-6 active:opacity-75";
 
   const styles: Record<Variant, string> = {
     primary: "bg-brown-warm dark:bg-umber",
     secondary:
-      "bg-sand dark:bg-bark-card border border-sand dark:border-[#3A2A20]",
+      "bg-sand dark:bg-bark-card border border-sand dark:border-[#4A354A]",
     ghost: "bg-transparent",
   };
 
@@ -46,7 +46,7 @@ export function Button({
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={variant === "primary" ? "#ffffff" : "#D4A574"}
+          color={variant === "primary" ? "#ffffff" : "#D4A5A5"}
         />
       ) : (
         <Text className={labelStyles[variant]}>{label}</Text>

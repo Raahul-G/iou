@@ -146,7 +146,7 @@ export default function CreateProfile() {
           <Text className="text-2xl font-semibold text-brown-deep dark:text-offwhite">
             Set up your profile
           </Text>
-          <Text className="mt-2 text-base text-brown-muted dark:text-[#9A8A82]">
+          <Text className="mt-2 text-base text-brown-muted dark:text-[#8A7385]">
             How should your friends see you?
           </Text>
         </View>
@@ -164,7 +164,7 @@ export default function CreateProfile() {
                   className="h-24 w-24 rounded-full bg-sand dark:bg-bark-card"
                 />
               ) : (
-                <View className="h-24 w-24 items-center justify-center rounded-full border-2 border-dashed border-sand dark:border-[#3A2A20] bg-white dark:bg-bark-card">
+                <View className="h-24 w-24 items-center justify-center rounded-full border-2 border-dashed border-sand dark:border-[#4A354A] bg-white dark:bg-bark-card">
                   <Text className="text-3xl">👤</Text>
                 </View>
               )}

@@ -51,7 +51,7 @@ function FriendCard({ friend }: { friend: FriendProfile }) {
           },
         })
       }
-      className="flex-row items-center gap-3 bg-white dark:bg-bark-card rounded-xl px-4 py-3 border border-sand dark:border-[#2A1E18]"
+      className="flex-row items-center gap-3 bg-white dark:bg-bark-card rounded-xl px-4 py-3 border border-sand dark:border-[#3D2B3D]"
     >
       {friend.profile_pic_url ? (
         <Image
@@ -59,7 +59,7 @@ function FriendCard({ friend }: { friend: FriendProfile }) {
           className="w-11 h-11 rounded-full bg-sand"
         />
       ) : (
-        <View className="w-11 h-11 rounded-full bg-sand dark:bg-[#2A1E18] items-center justify-center">
+        <View className="w-11 h-11 rounded-full bg-sand dark:bg-[#3D2B3D] items-center justify-center">
           <Text className="text-lg">👤</Text>
         </View>
       )}
@@ -67,16 +67,16 @@ function FriendCard({ friend }: { friend: FriendProfile }) {
         <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
           {label}
         </Text>
-        <Text className="text-sm text-brown-muted dark:text-[#9A8A82]">
+        <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
           {balanceText() ?? "—"}
         </Text>
         {scoresText() && (
-          <Text className="text-xs text-brown-muted dark:text-[#9A8A82] mt-0.5">
+          <Text className="text-xs text-brown-muted dark:text-[#8A7385] mt-0.5">
             ✓ {scoresText()}
           </Text>
         )}
       </View>
-      <Text className="text-brown-muted dark:text-[#9A8A82]">›</Text>
+      <Text className="text-brown-muted dark:text-[#8A7385]">›</Text>
     </Pressable>
   );
 }
@@ -98,7 +98,7 @@ export default function Dashboard() {
           <Text className="text-2xl font-semibold text-brown-deep dark:text-offwhite">
             Hey, {profile?.display_name ?? "there"} 👋
           </Text>
-          <Text className="text-sm text-brown-muted dark:text-[#9A8A82] mt-0.5">
+          <Text className="text-sm text-brown-muted dark:text-[#8A7385] mt-0.5">
             Your IOUs at a glance
           </Text>
         </View>
@@ -125,7 +125,7 @@ export default function Dashboard() {
         <ActivityIndicator className="mt-10" />
       ) : friends && friends.length > 0 ? (
         <View className="gap-3">
-          <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#9A8A82]">
+          <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
             Friends
           </Text>
           {friends.map((f) => (
@@ -138,7 +138,7 @@ export default function Dashboard() {
           <Text className="text-lg font-semibold text-brown-deep dark:text-offwhite">
             No friends yet
           </Text>
-          <Text className="text-sm text-brown-muted dark:text-[#9A8A82] text-center leading-relaxed">
+          <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center leading-relaxed">
             Add a friend to start trading IOUs. Search by their email address.
           </Text>
           <Pressable

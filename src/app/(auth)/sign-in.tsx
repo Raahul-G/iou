@@ -111,7 +111,7 @@ export default function SignIn() {
           <Text className="text-5xl font-semibold tracking-tight text-brown-deep dark:text-offwhite">
             IOU
           </Text>
-          <Text className="mt-1 text-base text-brown-muted dark:text-[#9A8A82]">
+          <Text className="mt-1 text-base text-brown-muted dark:text-[#8A7385]">
             Favours between friends
           </Text>
         </View>
@@ -162,7 +162,7 @@ export default function SignIn() {
         </View>
 
         <View className="mt-8 flex-row items-center justify-center gap-1">
-          <Text className="text-sm text-brown-muted dark:text-[#9A8A82]">
+          <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
             Don't have an account?
           </Text>
           <Pressable

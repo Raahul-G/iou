@@ -105,7 +105,7 @@ export default function Verify() {
           <Text className="text-2xl font-semibold text-brown-deep dark:text-offwhite">
             Check your email
           </Text>
-          <Text className="mt-2 text-base leading-relaxed text-brown-muted dark:text-[#9A8A82]">
+          <Text className="mt-2 text-base leading-relaxed text-brown-muted dark:text-[#8A7385]">
             We sent a verification code to{" "}
             <Text className="font-medium text-brown-deep dark:text-offwhite">
               {email}
@@ -145,7 +145,7 @@ export default function Verify() {
           {/* Resend */}
           <View className="items-center">
             {cooldown > 0 ? (
-              <Text className="text-sm text-brown-muted dark:text-[#9A8A82]">
+              <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
                 Resend code in{" "}
                 <Text className="font-medium text-brown-deep dark:text-offwhite">
                   {cooldown}s
@@ -167,7 +167,7 @@ export default function Verify() {
 
         {/* Wrong email? */}
         <View className="mt-8 flex-row items-center justify-center gap-1">
-          <Text className="text-sm text-brown-muted dark:text-[#9A8A82]">
+          <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
             Wrong email?
           </Text>
           <Pressable onPress={() => router.back()} hitSlop={8}>

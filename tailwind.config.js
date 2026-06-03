@@ -6,30 +6,31 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Light mode
+        // Light mode — "Morning Coffee"
         cream: {
-          DEFAULT: "#FFF8F3",
-          dark: "#F5EDE4",
+          DEFAULT: "#FFFDF9", // Warm Cream
+          dark: "#F5EDEE",
         },
-        sand: "#FFE8D1",
+        sand: "#F0DCDC",     // Soft Rose border/bg
         brown: {
-          warm: "#D4A574",
-          deep: "#5A4A42",
-          muted: "#8A7A74",
+          warm: "#D4A5A5",   // Muted Rose — buttons/active states
+          deep: "#3D2E2E",   // Deep Cocoa — main text
+          muted: "#8C7676",  // Soft Mauve — secondary text
         },
-        // Dark mode
+        // Dark mode — "Midnight Snuggle"
         bark: {
-          DEFAULT: "#1A1410",
-          card: "#2A1F18",
+          DEFAULT: "#1E151E", // Midnight Fig
+          card: "#2B1F2B",   // Espresso Deep
         },
-        umber: "#B8885C",
-        offwhite: "#E8DDD5",
+        umber: "#BA8B8B",    // Dusty Rose — dark mode accent
+        offwhite: "#F6F0F5", // Soft Vanilla — dark mode text
       },
       fontFamily: {
         sans: ["System"],
       },
       borderRadius: {
-        cozy: "8px",
+        cozy: "20px",
+        xl: "20px", // override default 12px → 20px for cards/containers
       },
     },
   },

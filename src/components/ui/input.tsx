@@ -16,20 +16,20 @@ export function Input({ label, error, hint, style, ...props }: InputProps) {
       )}
       <TextInput
         {...props}
-        placeholderTextColor="#8A7A74"
+        placeholderTextColor="#8C7676"
         className={[
-          "rounded-lg border px-4 py-3.5 text-base",
+          "rounded-xl border px-4 py-3.5 text-base",
           "text-brown-deep dark:text-offwhite",
           "bg-white dark:bg-bark-card",
           error
             ? "border-red-400 dark:border-red-600"
-            : "border-sand dark:border-[#3A2A20]",
+            : "border-sand dark:border-[#4A354A]",
         ].join(" ")}
       />
       {error ? (
         <Text className="text-xs text-red-500 dark:text-red-400">{error}</Text>
       ) : hint ? (
-        <Text className="text-xs text-brown-muted dark:text-[#9A8A82]">
+        <Text className="text-xs text-brown-muted dark:text-[#8A7385]">
           {hint}
         </Text>
       ) : null}
