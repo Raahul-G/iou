@@ -128,7 +128,7 @@ function TreeCard({ partnership }: { partnership: Partnership }) {
 
   return (
     <Pressable
-      onPress={() => router.push("/partner/pending")}
+      onPress={() => router.push("/wish")}
       className="bg-white dark:bg-bark-card rounded-xl border border-sand dark:border-[#3D2B3D] overflow-hidden active:opacity-80"
     >
       {/* Anniversary blossom banner */}

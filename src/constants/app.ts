@@ -20,7 +20,24 @@ export const NOTIF_ICONS: Record<string, string> = {
   iou_completion_requested: "🔔",
   iou_completion_rejected: "↩️",
   iou_completed: "🎉",
+  partner_invite: "🌱",
+  partner_invite_accepted: "🌳",
+  wish_created: "💌",
+  wish_accepted: "💧",
+  wish_not_right_now: "🌿",
+  wish_fulfilled: "✨",
+  wish_confirmed: "🎉",
+  wish_withdrawn: "🍂",
 };
+
+export const WISH_MOODS = [
+  { key: "playful", label: "Playful", emoji: "🎉" },
+  { key: "cozy", label: "Cozy", emoji: "🫶" },
+  { key: "sweet", label: "Sweet", emoji: "🍯" },
+  { key: "heartfelt", label: "Heartfelt", emoji: "💌" },
+  { key: "fun", label: "Fun", emoji: "🎮" },
+  { key: "calm", label: "Calm", emoji: "🌿" },
+];
 
 export const NOTIF_FETCH_LIMIT = 50;
 
