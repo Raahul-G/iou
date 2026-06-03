@@ -85,17 +85,19 @@ function AuthGuard() {
             .select("*")
             .eq("id", newSession.user.id)
             .single()
-            .then(({ data: profile }) => {
-              if (profile) {
-                setProfile(profile);
-                applyTheme(
-                  (profile.theme_preference as "light" | "dark" | "system") ?? "system"
-                );
+            .then(
+              ({ data: profile }) => {
+                if (profile) {
+                  setProfile(profile);
+                  applyTheme(
+                    (profile.theme_preference as "light" | "dark" | "system") ?? "system"
+                  );
+                }
+              },
+              () => {
+                // Non-critical: app is usable without profile. Theme stays default.
               }
-            })
-            .catch(() => {
-              // Non-critical: app is usable without profile. Theme stays default.
-            });
+            );
         } else {
           reset();
           // Auth screens always show in light mode — reset any previous user's theme override

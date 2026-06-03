@@ -143,10 +143,12 @@ export function useSetNickname() {
       nickname: string | null;
       isUserA: boolean;
     }) => {
-      const column = isUserA ? "user_a_nickname" : "user_b_nickname";
+      const update = isUserA
+        ? { user_a_nickname: nickname }
+        : { user_b_nickname: nickname };
       const { error } = await supabase
         .from("friendships")
-        .update({ [column]: nickname })
+        .update(update)
         .eq("id", friendshipId);
       if (error) throw error;
     },

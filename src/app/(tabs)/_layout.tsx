@@ -1,4 +1,4 @@
-import { Platform, Text } from "react-native";
+import { Platform, Text, type ColorValue } from "react-native";
 import { Tabs } from "expo-router";
 import { useColorScheme } from "react-native";
 import { SymbolView } from "expo-symbols";
@@ -10,7 +10,7 @@ type ColorScheme = keyof typeof Colors;
 type TabIconProps = {
   symbol: string;
   emoji: string;
-  color: string;
+  color: ColorValue;
   size: number;
 };
 
