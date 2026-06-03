@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       friend_requests: {
@@ -172,7 +197,9 @@ export type Database = {
           is_read: boolean
           message: string | null
           related_iou_id: string | null
+          related_partnership_id: string | null
           related_user_id: string | null
+          related_wish_id: string | null
           title: string
           type: string
           user_id: string
@@ -183,7 +210,9 @@ export type Database = {
           is_read?: boolean
           message?: string | null
           related_iou_id?: string | null
+          related_partnership_id?: string | null
           related_user_id?: string | null
+          related_wish_id?: string | null
           title: string
           type: string
           user_id: string
@@ -194,7 +223,9 @@ export type Database = {
           is_read?: boolean
           message?: string | null
           related_iou_id?: string | null
+          related_partnership_id?: string | null
           related_user_id?: string | null
+          related_wish_id?: string | null
           title?: string
           type?: string
           user_id?: string
@@ -208,6 +239,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "notifications_related_partnership_id_fkey"
+            columns: ["related_partnership_id"]
+            isOneToOne: false
+            referencedRelation: "partnerships"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "notifications_related_user_id_fkey"
             columns: ["related_user_id"]
             isOneToOne: false
@@ -215,8 +253,67 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "notifications_related_wish_id_fkey"
+            columns: ["related_wish_id"]
+            isOneToOne: false
+            referencedRelation: "wishes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "notifications_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partnerships: {
+        Row: {
+          activated_at: string | null
+          created_at: string
+          fertilizer_id: string
+          id: string
+          inviter_id: string
+          status: string
+          water_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string
+          fertilizer_id: string
+          id?: string
+          inviter_id: string
+          status?: string
+          water_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string
+          fertilizer_id?: string
+          id?: string
+          inviter_id?: string
+          status?: string
+          water_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partnerships_fertilizer_id_fkey"
+            columns: ["fertilizer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partnerships_inviter_id_fkey"
+            columns: ["inviter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partnerships_water_id_fkey"
+            columns: ["water_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -253,21 +350,124 @@ export type Database = {
         }
         Relationships: []
       }
+      wishes: {
+        Row: {
+          accepted_at: string | null
+          confirmed_at: string | null
+          created_at: string
+          creator_id: string
+          decline_mood: string | null
+          decline_text: string | null
+          fulfilled_at: string | null
+          held_at: string | null
+          id: string
+          mood: string
+          partnership_id: string
+          status: string
+          target_id: string
+          text: string
+          thank_you_note: string | null
+          updated_at: string
+          withdrawn_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          creator_id: string
+          decline_mood?: string | null
+          decline_text?: string | null
+          fulfilled_at?: string | null
+          held_at?: string | null
+          id?: string
+          mood: string
+          partnership_id: string
+          status?: string
+          target_id: string
+          text: string
+          thank_you_note?: string | null
+          updated_at?: string
+          withdrawn_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          creator_id?: string
+          decline_mood?: string | null
+          decline_text?: string | null
+          fulfilled_at?: string | null
+          held_at?: string | null
+          id?: string
+          mood?: string
+          partnership_id?: string
+          status?: string
+          target_id?: string
+          text?: string
+          thank_you_note?: string | null
+          updated_at?: string
+          withdrawn_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishes_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishes_partnership_id_fkey"
+            columns: ["partnership_id"]
+            isOneToOne: false
+            referencedRelation: "partnerships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishes_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      create_notification: {
-        Args: {
-          p_message: string
-          p_related_iou_id: string
-          p_related_user_id: string
-          p_title: string
-          p_type: string
-          p_user_id: string
-        }
-        Returns: undefined
+      create_notification:
+        | {
+            Args: {
+              p_message: string
+              p_related_iou_id: string
+              p_related_user_id: string
+              p_title: string
+              p_type: string
+              p_user_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_message: string
+              p_related_partnership_id: string
+              p_related_user_id: string
+              p_related_wish_id: string
+              p_title: string
+              p_type: string
+              p_user_id: string
+            }
+            Returns: undefined
+          }
+      find_user_by_email: {
+        Args: { search_email: string }
+        Returns: {
+          display_name: string
+          id: string
+          profile_pic_url: string
+        }[]
       }
     }
     Enums: {
@@ -397,6 +597,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
