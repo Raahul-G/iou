@@ -161,6 +161,18 @@ export default function Notifications() {
   const handleNotifPress = async (notif: AppNotification) => {
     if (notif.type === "friend_request") return;
 
+    // Partner invite — go to pending screen to accept/decline
+    if (notif.type === "partner_invite") {
+      router.push("/partner/pending");
+      return;
+    }
+
+    // Any other partnership or wish notification — go to the wish screen
+    if (notif.related_partnership_id || notif.related_wish_id) {
+      router.push("/wish");
+      return;
+    }
+
     if (notif.related_iou_id) {
       const { data } = await supabase
         .from("ious")

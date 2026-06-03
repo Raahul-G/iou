@@ -14,9 +14,19 @@ export type AppNotification = {
     | "iou_declined"
     | "iou_completion_requested"
     | "iou_completion_rejected"
-    | "iou_completed";
+    | "iou_completed"
+    | "partner_invite"
+    | "partner_invite_accepted"
+    | "wish_created"
+    | "wish_accepted"
+    | "wish_not_right_now"
+    | "wish_fulfilled"
+    | "wish_confirmed"
+    | "wish_withdrawn";
   related_user_id: string | null;
   related_iou_id: string | null;
+  related_partnership_id: string | null;
+  related_wish_id: string | null;
   title: string;
   message: string | null;
   is_read: boolean;
