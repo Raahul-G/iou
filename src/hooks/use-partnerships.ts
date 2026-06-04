@@ -20,9 +20,8 @@ export type Partnership = {
 };
 
 export type TreeScore = {
-  waterScore: number;
-  fertilizerScore: number;
-  threshold: number; // Math.floor(waterScore / 2) — what fertilizer must reach
+  myScore: number;
+  partnerScore: number;
   state: "alive" | "dull" | "dead";
   anniversaryToday: boolean;
 };
@@ -156,17 +155,16 @@ export function useDeclineOrCancelPartnership() {
 // ----------------------------------------------------------------
 // Relationship Tree score — 14-day rolling window.
 //
-// Water score (X):
-//   1× per IOU given by water_id (completed in window)
-//   2× per wish fulfilled by water_id (confirmed in window)
+// Point system (symmetric — both roles earn the same way):
+//   IOU completed:      creator  → +1 pt
+//   Wish confirmed:     target   → +2 pts  (they did the work)
 //
-// Fertilizer score:
-//   1× per IOU given by fertilizer_id (completed in window)
-//
-// Tree state:
-//   alive — fertilizer_score >= floor(water_score / 2)
-//   dull  — current window fails threshold, previous window was ok
-//   dead  — both current AND previous 14-day windows fail threshold
+// Tree state (Option A — mutual threshold):
+//   high = max(myScore, partnerScore)
+//   low  = min(myScore, partnerScore)
+//   alive — low >= floor(high / 2)   (both contributing)
+//   dull  — low <  floor(high / 2)   (one falling behind)
+//   dead  — both scores = 0 in current AND previous 14-day window
 //
 // Anniversary blossom: tree blooms on the calendar day matching
 // activated_at (day + month, any year).
@@ -180,24 +178,30 @@ export function useTreeScore(partnership: Partnership | null | undefined) {
       const window14 = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString();
       const window28 = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000).toISOString();
 
-      const { water_id, fertilizer_id, id: partnershipId, activated_at } = partnership!;
+      const myId = partnership!.my_role === "water"
+        ? partnership!.water_id
+        : partnership!.fertilizer_id;
+      const partnerId = partnership!.partner_id;
+      const { id: partnershipId, activated_at } = partnership!;
 
-      // All completed IOUs between the two partners in the last 28 days
+      // All completed IOUs between the two partners in the last 28 days.
+      // Creator gets 1 pt per completed IOU.
       const { data: ious, error: iouError } = await supabase
         .from("ious")
         .select("creator_id, completed_at")
         .or(
-          `and(creator_id.eq.${water_id},receiver_id.eq.${fertilizer_id}),and(creator_id.eq.${fertilizer_id},receiver_id.eq.${water_id})`
+          `and(creator_id.eq.${myId},receiver_id.eq.${partnerId}),and(creator_id.eq.${partnerId},receiver_id.eq.${myId})`
         )
         .eq("status", "completed")
         .gte("completed_at", window28);
 
       if (iouError) throw iouError;
 
-      // All confirmed wishes in this partnership in the last 28 days
+      // All confirmed wishes in this partnership in the last 28 days.
+      // Target (fulfiller) gets 2 pts per confirmed wish.
       const { data: wishes, error: wishError } = await supabase
         .from("wishes")
-        .select("confirmed_at")
+        .select("target_id, confirmed_at")
         .eq("partnership_id", partnershipId)
         .eq("status", "confirmed")
         .gte("confirmed_at", window28);
@@ -207,58 +211,59 @@ export function useTreeScore(partnership: Partnership | null | undefined) {
       const allIOUs = ious ?? [];
       const allWishes = wishes ?? [];
 
-      // ── Current 14-day window ──────────────────────────────────
-      const waterIous14 = allIOUs.filter(
-        (i) => i.creator_id === water_id && i.completed_at! >= window14
-      ).length;
-      const fertilizerIous14 = allIOUs.filter(
-        (i) => i.creator_id === fertilizer_id && i.completed_at! >= window14
-      ).length;
-      const wishesFulfilled14 = allWishes.filter(
-        (w) => w.confirmed_at! >= window14
-      ).length;
+      // ── Score helper ─────────────────────────────────────────
+      const calcScore = (userId: string, fromTs: string, toTs?: string) => {
+        const iouPts = allIOUs.filter(
+          (i) =>
+            i.creator_id === userId &&
+            i.completed_at! >= fromTs &&
+            (toTs === undefined || i.completed_at! < toTs)
+        ).length;
+        const wishPts = allWishes.filter(
+          (w) =>
+            w.target_id === userId &&
+            w.confirmed_at! >= fromTs &&
+            (toTs === undefined || w.confirmed_at! < toTs)
+        ).length * 2;
+        return iouPts + wishPts;
+      };
 
-      const waterScore = waterIous14 + wishesFulfilled14 * 2;
-      const fertilizerScore = fertilizerIous14;
-      const threshold = Math.floor(waterScore / 2);
+      // ── Current 14-day window ──────────────────────────────────
+      const myScore      = calcScore(myId,      window14);
+      const partnerScore = calcScore(partnerId,  window14);
 
       // ── Previous 14-28 day window ─────────────────────────────
-      const waterIous28 = allIOUs.filter(
-        (i) => i.creator_id === water_id && i.completed_at! < window14
-      ).length;
-      const fertilizerIous28 = allIOUs.filter(
-        (i) => i.creator_id === fertilizer_id && i.completed_at! < window14
-      ).length;
-      const wishesFulfilled28 = allWishes.filter(
-        (w) => w.confirmed_at! < window14
-      ).length;
+      const prevMyScore      = calcScore(myId,      window28, window14);
+      const prevPartnerScore = calcScore(partnerId,  window28, window14);
 
-      const prevWaterScore = waterIous28 + wishesFulfilled28 * 2;
-      const prevFertilizerScore = fertilizerIous28;
-      const prevThreshold = Math.floor(prevWaterScore / 2);
+      // ── Tree state (Option A mutual threshold) ────────────────
+      const treeState = (me: number, partner: number): "alive" | "dull" | null => {
+        if (me === 0 && partner === 0) return null; // both zero — defer to prev window
+        const high = Math.max(me, partner);
+        const low  = Math.min(me, partner);
+        return low >= Math.floor(high / 2) ? "alive" : "dull";
+      };
 
-      // ── Tree state ────────────────────────────────────────────
-      const currentHealthy = fertilizerScore >= threshold;
-      const prevHealthy = prevFertilizerScore >= prevThreshold;
+      const currentState = treeState(myScore, partnerScore);
+      const prevState    = treeState(prevMyScore, prevPartnerScore);
 
-      const state: TreeScore["state"] = currentHealthy
-        ? "alive"
-        : prevHealthy
-        ? "dull"
-        : "dead";
+      const state: TreeScore["state"] =
+        currentState !== null ? currentState :
+        prevState    !== null ? "dull" :       // was active before, now silent
+        "dead";
 
       // ── Anniversary blossom ───────────────────────────────────
       const anniversaryToday = (() => {
         if (!activated_at) return false;
-        const today = new Date();
+        const today     = new Date();
         const activated = new Date(activated_at);
         return (
           today.getMonth() === activated.getMonth() &&
-          today.getDate() === activated.getDate()
+          today.getDate()  === activated.getDate()
         );
       })();
 
-      return { waterScore, fertilizerScore, threshold, state, anniversaryToday } as TreeScore;
+      return { myScore, partnerScore, state, anniversaryToday } as TreeScore;
     },
   });
 }

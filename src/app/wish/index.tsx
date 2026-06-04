@@ -28,28 +28,28 @@ const MOOD_EMOJI: Record<string, string> = Object.fromEntries(
   WISH_MOODS.map((m) => [m.key, m.emoji])
 );
 
-// ─── Status label for fertilizer while waiting ───────────────────────────────
+// ─── Status info shown to the wish creator while waiting ─────────────────────
 
-function wishStatusLabel(status: WishStatus): string {
+function creatorStatusLabel(status: WishStatus): string {
   switch (status) {
-    case "active":    return "Waiting for a response…";
-    case "accepted":  return "Your partner accepted — they'll let you know when it's done.";
-    case "on_hold":   return "Your partner said \"not right now\".";
-    case "fulfilled": return "Your partner says they've done it! Confirm below.";
-    default:          return "";
+    case "active":   return "Waiting for your partner to respond…";
+    case "accepted": return "Your partner accepted — they'll let you know when it's done.";
+    case "on_hold":  return "Your partner said \"not right now\".";
+    case "fulfilled":return "Your partner says they've done it! Confirm below.";
+    default:         return "";
   }
 }
 
-// ─── Wish card (shared display) ───────────────────────────────────────────────
+// ─── Wish card ────────────────────────────────────────────────────────────────
 
-function WishCard({ wish, partnerFirstName }: { wish: Wish; partnerFirstName: string }) {
+function WishCard({ wish, creatorName }: { wish: Wish; creatorName: string }) {
   const mood = MOOD_EMOJI[wish.mood] ?? "💌";
   return (
     <View className="bg-white dark:bg-bark-card rounded-xl px-4 py-5 border border-sand dark:border-[#3D2B3D] gap-3">
       <View className="flex-row items-center gap-2">
         <Text style={{ fontSize: 22 }}>{mood}</Text>
         <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
-          A wish from {partnerFirstName}
+          A wish from {creatorName}
         </Text>
       </View>
       <Text className="text-base text-brown-deep dark:text-offwhite leading-relaxed">
@@ -59,7 +59,7 @@ function WishCard({ wish, partnerFirstName }: { wish: Wish; partnerFirstName: st
   );
 }
 
-// ─── Decline note (on_hold) ───────────────────────────────────────────────────
+// ─── Decline note (shown to creator when on_hold) ─────────────────────────────
 
 function DeclineNote({ wish }: { wish: Wish }) {
   if (!wish.decline_text && !wish.decline_mood) return null;
@@ -67,16 +67,14 @@ function DeclineNote({ wish }: { wish: Wish }) {
   return (
     <View className="bg-sand/30 dark:bg-[#160F16] rounded-xl px-4 py-3 gap-1">
       <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
-        Your note
+        Their note
       </Text>
       {wish.decline_text ? (
         <Text className="text-sm text-brown-deep dark:text-offwhite">
           {emoji ? `${emoji} ` : ""}{wish.decline_text}
         </Text>
       ) : (
-        <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
-          {emoji}
-        </Text>
+        <Text className="text-sm text-brown-muted dark:text-[#8A7385]">{emoji}</Text>
       )}
     </View>
   );
@@ -86,15 +84,18 @@ function DeclineNote({ wish }: { wish: Wish }) {
 
 function HistoryRow({ wish }: { wish: Wish }) {
   const mood = MOOD_EMOJI[wish.mood] ?? "💌";
-  const statusEmoji =
-    wish.status === "confirmed" ? "✓" : "✕";
   return (
     <View className="flex-row items-start gap-3 py-2.5 border-b border-sand dark:border-[#3D2B3D]">
       <Text className="text-base mt-0.5">{mood}</Text>
-      <Text className="flex-1 text-sm text-brown-muted dark:text-[#8A7385] leading-relaxed" numberOfLines={2}>
+      <Text
+        className="flex-1 text-sm text-brown-muted dark:text-[#8A7385] leading-relaxed"
+        numberOfLines={2}
+      >
         {wish.text}
       </Text>
-      <Text className="text-xs text-brown-muted dark:text-[#8A7385] mt-0.5">{statusEmoji}</Text>
+      <Text className="text-xs text-brown-muted dark:text-[#8A7385] mt-0.5">
+        {wish.status === "confirmed" ? "✓" : "✕"}
+      </Text>
     </View>
   );
 }
@@ -112,7 +113,6 @@ export default function WishScreen() {
   );
   const updateWish = useUpdateWishStatus();
 
-  // Inline "not right now" + "confirm" state
   const [showDeclineInput, setShowDeclineInput] = useState(false);
   const [declineText, setDeclineText] = useState("");
   const [showThankYouInput, setShowThankYouInput] = useState(false);
@@ -132,11 +132,15 @@ export default function WishScreen() {
     return null;
   }
 
-  const myRole = partnership.my_role;
-  const isFertilizer = myRole === "fertilizer";
-  const isWater = myRole === "water";
   const partnerFirst = partnership.partner_name.split(" ")[0];
   const partnershipId = partnership.id;
+
+  // Who am I relative to the active wish?
+  const amCreator = !!activeWish && activeWish.creator_id === user?.id;
+  const amTarget  = !!activeWish && activeWish.target_id  === user?.id;
+
+  // Creator name for the WishCard header
+  const wishCreatorName = amTarget ? partnerFirst : "you";
 
   const mutate = async (action: Parameters<typeof updateWish.mutateAsync>[0]) => {
     setActionError(null);
@@ -151,10 +155,7 @@ export default function WishScreen() {
     mutate({ wishId: activeWish!.id, partnershipId, action: "accept" });
 
   const handleNotRightNow = async () => {
-    if (!showDeclineInput) {
-      setShowDeclineInput(true);
-      return;
-    }
+    if (!showDeclineInput) { setShowDeclineInput(true); return; }
     await mutate({
       wishId: activeWish!.id,
       partnershipId,
@@ -183,10 +184,7 @@ export default function WishScreen() {
     mutate({ wishId: activeWish!.id, partnershipId, action: "mark_done" });
 
   const handleConfirm = async () => {
-    if (!showThankYouInput) {
-      setShowThankYouInput(true);
-      return;
-    }
+    if (!showThankYouInput) { setShowThankYouInput(true); return; }
     await mutate({
       wishId: activeWish!.id,
       partnershipId,
@@ -211,7 +209,8 @@ export default function WishScreen() {
         <Text className="flex-1 text-lg font-semibold text-brown-deep dark:text-offwhite">
           Your wish
         </Text>
-        {isFertilizer && !activeWish && (
+        {/* Both partners can make a wish when the slot is empty */}
+        {!activeWish && (
           <Pressable
             onPress={() => router.push("/wish/new")}
             className="bg-brown-warm dark:bg-umber rounded-full px-3 py-1.5"
@@ -226,51 +225,40 @@ export default function WishScreen() {
           <Text className="text-sm text-red-500 text-center">{actionError}</Text>
         )}
 
-        {/* ── No active wish ──────────────────────────────────────────── */}
+        {/* ── No active wish — both can make one ──────────────────── */}
         {!activeWish && (
           <View className="items-center gap-4 py-8">
             <Text style={{ fontSize: 56 }}>🌱</Text>
-            {isFertilizer ? (
-              <>
-                <View className="items-center gap-1">
-                  <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
-                    No wish yet
-                  </Text>
-                  <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center px-4 leading-relaxed">
-                    Make a wish for {partnerFirst} to grant.
-                  </Text>
-                </View>
-                <Button
-                  label="Make a wish ✨"
-                  onPress={() => router.push("/wish/new")}
-                />
-              </>
-            ) : (
-              <View className="items-center gap-1">
-                <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
-                  Waiting for a wish
-                </Text>
-                <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center px-4 leading-relaxed">
-                  {partnerFirst} hasn't made a wish yet.
-                </Text>
-              </View>
-            )}
+            <View className="items-center gap-1">
+              <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
+                No wish yet
+              </Text>
+              <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center px-4 leading-relaxed">
+                Either of you can make a wish for the other to grant.
+              </Text>
+            </View>
+            <Button
+              label="Make a wish ✨"
+              onPress={() => router.push("/wish/new")}
+            />
           </View>
         )}
 
-        {/* ── Active wish ─────────────────────────────────────────────── */}
+        {/* ── Active wish ─────────────────────────────────────────── */}
         {activeWish && (
           <>
-            <WishCard wish={activeWish} partnerFirstName={partnerFirst} />
+            <WishCard wish={activeWish} creatorName={wishCreatorName} />
 
-            {/* On-hold: show Water's decline note */}
-            {activeWish.status === "on_hold" && <DeclineNote wish={activeWish} />}
+            {/* Decline note visible to creator when on_hold */}
+            {amCreator && activeWish.status === "on_hold" && (
+              <DeclineNote wish={activeWish} />
+            )}
 
-            {/* ── Water actions ── */}
-            {isWater && activeWish.status === "active" && (
+            {/* ── TARGET actions (the one who needs to fulfill the wish) ── */}
+            {amTarget && activeWish.status === "active" && (
               <View className="gap-3">
                 <Button
-                  label="Accept 💧"
+                  label="Accept ✓"
                   onPress={handleAccept}
                   loading={updateWish.isPending}
                 />
@@ -287,11 +275,7 @@ export default function WishScreen() {
                     />
                     <View className="flex-row gap-2">
                       <View className="flex-1">
-                        <Button
-                          label="Send"
-                          onPress={handleNotRightNow}
-                          loading={updateWish.isPending}
-                        />
+                        <Button label="Send" onPress={handleNotRightNow} loading={updateWish.isPending} />
                       </View>
                       <View className="flex-1">
                         <Button
@@ -314,7 +298,20 @@ export default function WishScreen() {
               </View>
             )}
 
-            {isWater && activeWish.status === "accepted" && (
+            {amTarget && activeWish.status === "on_hold" && (
+              <View className="gap-3">
+                <Button
+                  label="Accept ✓"
+                  onPress={handleAccept}
+                  loading={updateWish.isPending}
+                />
+                <Text className="text-xs text-brown-muted dark:text-[#8A7385] text-center">
+                  You said "not right now" — you can still accept when ready.
+                </Text>
+              </View>
+            )}
+
+            {amTarget && activeWish.status === "accepted" && (
               <Button
                 label="Mark as done ✓"
                 onPress={handleMarkDone}
@@ -322,15 +319,7 @@ export default function WishScreen() {
               />
             )}
 
-            {isWater && activeWish.status === "on_hold" && (
-              <View className="items-center py-2">
-                <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center">
-                  The wish is still open — accept it when you're ready.
-                </Text>
-              </View>
-            )}
-
-            {isWater && activeWish.status === "fulfilled" && (
+            {amTarget && activeWish.status === "fulfilled" && (
               <View className="items-center py-2">
                 <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center">
                   Waiting for {partnerFirst} to confirm.
@@ -338,12 +327,12 @@ export default function WishScreen() {
               </View>
             )}
 
-            {/* ── Fertilizer actions ── */}
-            {isFertilizer && (
+            {/* ── CREATOR actions (the one who made the wish) ── */}
+            {amCreator && (
               <>
                 <View className="bg-white dark:bg-bark-card rounded-xl px-4 py-3 border border-sand dark:border-[#3D2B3D]">
                   <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
-                    {wishStatusLabel(activeWish.status)}
+                    {creatorStatusLabel(activeWish.status)}
                   </Text>
                 </View>
 
@@ -362,11 +351,7 @@ export default function WishScreen() {
                         />
                         <View className="flex-row gap-2">
                           <View className="flex-1">
-                            <Button
-                              label="Confirm ✓"
-                              onPress={handleConfirm}
-                              loading={updateWish.isPending}
-                            />
+                            <Button label="Confirm ✓" onPress={handleConfirm} loading={updateWish.isPending} />
                           </View>
                           <View className="flex-1">
                             <Button
@@ -401,7 +386,7 @@ export default function WishScreen() {
           </>
         )}
 
-        {/* ── History ─────────────────────────────────────────────────── */}
+        {/* ── History ──────────────────────────────────────────────── */}
         {history && history.length > 0 && (
           <View className="gap-2 mt-2">
             <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">

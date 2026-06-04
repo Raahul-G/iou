@@ -24,11 +24,8 @@ export default function NewWish() {
     const trimmed = text.trim();
     if (!trimmed || !partnership || partnership.status !== "active") return;
 
-    // Fertilizer creates, Water is target
-    const targetId =
-      partnership.my_role === "fertilizer"
-        ? partnership.water_id
-        : partnership.fertilizer_id;
+    // Target is always the other partner
+    const targetId = partnership.partner_id;
 
     setError(null);
     try {

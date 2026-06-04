@@ -166,7 +166,7 @@ export default function PartnerPending() {
               </View>
             </View>
             <Text className="text-xs text-brown-muted dark:text-[#8A7385] text-center">
-              Roles are just labels — both of you play equally.
+              Roles are just labels — both of you can send IOUs and make wishes equally.
             </Text>
           </View>
 

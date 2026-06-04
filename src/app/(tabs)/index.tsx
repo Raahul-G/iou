@@ -121,10 +121,8 @@ function TreeCard({ partnership }: { partnership: Partnership }) {
   const partnerEmoji = myRole === "water" ? "🌿" : "💧";
   const partnerFirst = partnership.partner_name.split(" ")[0];
 
-  // Scores relative to current user's perspective
-  const myScore = myRole === "water" ? score?.waterScore : score?.fertilizerScore;
-  const partnerScore = myRole === "water" ? score?.fertilizerScore : score?.waterScore;
-  const needsScore = myRole === "water" ? score?.threshold : null; // threshold applies to fertilizer
+  const myScore      = score?.myScore;
+  const partnerScore = score?.partnerScore;
 
   return (
     <Pressable
@@ -157,7 +155,7 @@ function TreeCard({ partnership }: { partnership: Partnership }) {
           <View className="flex-row gap-5 mt-1">
             <View className="items-center gap-0.5">
               <Text className="text-sm font-semibold text-brown-deep dark:text-offwhite">
-                {myScore ?? 0}
+                {myScore ?? 0} {myEmoji}
               </Text>
               <Text className="text-xs text-brown-muted dark:text-[#8A7385]">
                 your pts
@@ -165,12 +163,7 @@ function TreeCard({ partnership }: { partnership: Partnership }) {
             </View>
             <View className="items-center gap-0.5">
               <Text className="text-sm font-semibold text-brown-deep dark:text-offwhite">
-                {partnerScore ?? 0}
-                {needsScore != null && (
-                  <Text className="text-xs text-brown-muted dark:text-[#8A7385]">
-                    {" "}/ {needsScore} min
-                  </Text>
-                )}
+                {partnerScore ?? 0} {partnerEmoji}
               </Text>
               <Text className="text-xs text-brown-muted dark:text-[#8A7385]">
                 {partnerFirst}'s pts

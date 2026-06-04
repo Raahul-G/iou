@@ -27,13 +27,13 @@ const ROLES: RoleOption[] = [
     role: "water",
     emoji: "💧",
     label: "Water",
-    description: "You give IOUs and make your partner's Wishes come true.",
+    description: "Send IOUs and make wishes — every drop of effort keeps your tree alive and growing.",
   },
   {
     role: "fertilizer",
     emoji: "🌿",
     label: "Fertilizer",
-    description: "You create Wishes for your partner to fulfill.",
+    description: "Send IOUs and make wishes — your effort is the nourishment that helps your tree grow strong.",
   },
 ];
 
