@@ -274,42 +274,51 @@ export default function Dashboard() {
         </Pressable>
       </View>
 
-      {/* Tree section */}
-      {!partnershipLoading && (
-        <>
-          {partnership?.status === "active" ? (
-            <View className="gap-2">
-              <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
-                Your tree
-              </Text>
-              <TreeCard partnership={partnership} />
-            </View>
-          ) : partnership?.status === "pending" ? (
-            <View className="gap-2">
-              <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
-                Partner invite
-              </Text>
-              <PendingBanner partnership={partnership} />
-            </View>
-          ) : (
-            // No partnership — show plant a tree CTA
-            <Pressable
-              onPress={() => router.push("/partner/invite")}
-              className="flex-row items-center gap-4 bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#3D2B3D] active:opacity-80"
-            >
-              <Text style={{ fontSize: 36, lineHeight: 42 }}>🌱</Text>
-              <View className="flex-1 gap-0.5">
-                <Text className="text-sm font-semibold text-brown-deep dark:text-offwhite">
-                  Plant a tree with someone
-                </Text>
-                <Text className="text-xs text-brown-muted dark:text-[#8A7385]">
-                  Grow a bond that reflects your effort together
-                </Text>
-              </View>
-              <Text className="text-brown-muted dark:text-[#8A7385]">›</Text>
-            </Pressable>
-          )}
-        </>
+      {/* Tree section — always renders; loading shimmer while fetching */}
+      {partnership?.status === "active" ? (
+        <View className="gap-2">
+          <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
+            Your tree
+          </Text>
+          <TreeCard partnership={partnership} />
+        </View>
+      ) : partnership?.status === "pending" ? (
+        <View className="gap-2">
+          <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
+            Partner invite
+          </Text>
+          <PendingBanner partnership={partnership} />
+        </View>
+      ) : partnershipLoading ? (
+        // Show placeholder while fetching — prevents blank gap
+        <View className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#3D2B3D] flex-row items-center gap-4 opacity-50">
+          <Text style={{ fontSize: 36, lineHeight: 42 }}>🌱</Text>
+          <View className="flex-1 gap-0.5">
+            <Text className="text-sm font-semibold text-brown-deep dark:text-offwhite">
+              Plant a tree with someone
+            </Text>
+            <Text className="text-xs text-brown-muted dark:text-[#8A7385]">
+              Grow a bond that reflects your effort together
+            </Text>
+          </View>
+        </View>
+      ) : (
+        // No partnership
+        <Pressable
+          onPress={() => router.push("/partner/invite")}
+          className="flex-row items-center gap-4 bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#3D2B3D] active:opacity-80"
+        >
+          <Text style={{ fontSize: 36, lineHeight: 42 }}>🌱</Text>
+          <View className="flex-1 gap-0.5">
+            <Text className="text-sm font-semibold text-brown-deep dark:text-offwhite">
+              Plant a tree with someone
+            </Text>
+            <Text className="text-xs text-brown-muted dark:text-[#8A7385]">
+              Grow a bond that reflects your effort together
+            </Text>
+          </View>
+          <Text className="text-brown-muted dark:text-[#8A7385]">›</Text>
+        </Pressable>
       )}
 
       {/* Friends list */}
