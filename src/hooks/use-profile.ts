@@ -45,32 +45,43 @@ export function useUploadAvatar() {
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.7,
+        base64: true,
       });
 
       if (result.canceled || !result.assets[0]) return null;
 
       const asset = result.assets[0];
-      const ext = (asset.uri.split(".").pop() ?? "jpg").toLowerCase();
-      const path = `${user!.id}/avatar.${ext}`;
+      if (!asset.base64) throw new Error("Failed to read image data.");
 
-      const response = await fetch(asset.uri);
-      if (!response.ok) throw new Error("Failed to read image file.");
-      const blob = await response.blob();
+      // Always fixed path — one file per user, upsert overwrites
+      const path = `${user!.id}/avatar.jpg`;
+
+      // Delete any previously uploaded avatar (handles extension changes)
+      const { data: existing } = await supabase.storage
+        .from("avatars")
+        .list(user!.id);
+      if (existing && existing.length > 0) {
+        await supabase.storage
+          .from("avatars")
+          .remove(existing.map((f) => `${user!.id}/${f.name}`));
+      }
+
+      // base64 → Uint8Array — works on web and native, no fetch(uri) needed
+      const binary = atob(asset.base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(path, blob, {
-          upsert: true,
-          contentType: `image/${ext === "jpg" ? "jpeg" : ext}`,
-        });
+        .upload(path, bytes, { upsert: true, contentType: "image/jpeg" });
 
       if (uploadError) throw uploadError;
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(path);
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(path);
 
-      // Bust CDN cache by appending a timestamp param
+      // Cache-bust so all platforms show the new image immediately
       const urlWithBust = `${publicUrl}?t=${Date.now()}`;
 
       const { data, error } = await supabase

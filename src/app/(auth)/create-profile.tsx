@@ -20,6 +20,7 @@ export default function CreateProfile() {
   const { user, profile, setProfile } = useAuthStore();
   const [displayName, setDisplayName] = useState("");
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [avatarAsset, setAvatarAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,34 +47,43 @@ export default function CreateProfile() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
+      base64: true,
     });
 
     if (!result.canceled && result.assets[0]) {
       setAvatarUri(result.assets[0].uri);
+      setAvatarAsset(result.assets[0]);
     }
   };
 
-  const uploadAvatar = async (uri: string): Promise<string | null> => {
-    if (!user) return null;
+  const uploadAvatar = async (asset: ImagePicker.ImagePickerAsset): Promise<string | null> => {
+    if (!user || !asset.base64) throw new Error("Failed to read image data.");
 
-    const ext = uri.split(".").pop()?.toLowerCase() ?? "jpg";
-    const fileName = `${user.id}/avatar.${ext}`;
+    const path = `${user.id}/avatar.jpg`;
 
-    const response = await fetch(uri);
-    if (!response.ok) throw new Error("Failed to read image file.");
-    const blob = await response.blob();
+    // Delete any existing avatar first
+    const { data: existing } = await supabase.storage
+      .from("avatars")
+      .list(user.id);
+    if (existing && existing.length > 0) {
+      await supabase.storage
+        .from("avatars")
+        .remove(existing.map((f) => `${user.id}/${f.name}`));
+    }
+
+    // base64 → Uint8Array — works on web and native
+    const binary = atob(asset.base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
     const { error } = await supabase.storage
       .from("avatars")
-      .upload(fileName, blob, {
-        contentType: `image/${ext}`,
-        upsert: true,
-      });
+      .upload(path, bytes, { contentType: "image/jpeg", upsert: true });
 
     if (error) throw error;
 
-    const { data } = supabase.storage.from("avatars").getPublicUrl(fileName);
-    return data.publicUrl;
+    const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+    return `${data.publicUrl}?t=${Date.now()}`;
   };
 
   const handleSave = async () => {
@@ -95,10 +105,10 @@ export default function CreateProfile() {
       let profilePicUrl = profile?.profile_pic_url ?? null;
 
       // Upload avatar if a new local image was picked
-      if (avatarUri && avatarUri !== profile?.profile_pic_url) {
+      if (avatarAsset && avatarUri !== profile?.profile_pic_url) {
         setUploading(true);
         try {
-          profilePicUrl = await uploadAvatar(avatarUri);
+          profilePicUrl = await uploadAvatar(avatarAsset);
         } finally {
           setUploading(false);
         }
