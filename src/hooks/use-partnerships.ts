@@ -171,7 +171,7 @@ export function useDeclineOrCancelPartnership() {
 // ----------------------------------------------------------------
 export function useTreeScore(partnership: Partnership | null | undefined) {
   return useQuery({
-    queryKey: ["tree", partnership?.id],
+    queryKey: ["tree", partnership?.id, partnership?.my_role],
     enabled: !!partnership && partnership.status === "active",
     queryFn: async () => {
       const now = new Date();

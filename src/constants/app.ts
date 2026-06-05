@@ -28,6 +28,7 @@ export const NOTIF_ICONS: Record<string, string> = {
   wish_fulfilled: "✨",
   wish_confirmed: "🎉",
   wish_withdrawn: "🍂",
+  tree_dull: "🌿",
 };
 
 export const WISH_MOODS = [

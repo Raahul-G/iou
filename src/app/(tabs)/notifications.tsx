@@ -161,15 +161,41 @@ export default function Notifications() {
   const handleNotifPress = async (notif: AppNotification) => {
     if (notif.type === "friend_request") return;
 
-    // Partner invite — go to pending screen to accept/decline
-    if (notif.type === "partner_invite") {
-      router.push("/partner/pending");
-      return;
-    }
+    // Wish or tree notification — deep-link to the friend screen
+    if (notif.related_friendship_id) {
+      const { data } = await supabase
+        .from("friendships")
+        .select(`
+          user_a_id, user_b_id,
+          user_a_nickname, user_b_nickname,
+          user_a:profiles!friendships_user_a_id_fkey(display_name, profile_pic_url),
+          user_b:profiles!friendships_user_b_id_fkey(display_name, profile_pic_url)
+        `)
+        .eq("id", notif.related_friendship_id)
+        .single();
 
-    // Any other partnership or wish notification — go to the wish screen
-    if (notif.related_partnership_id || notif.related_wish_id) {
-      router.push("/wish");
+      if (!data) return;
+
+      const myId = user!.id;
+      const isUserA = myId === data.user_a_id;
+      const friendId = isUserA ? data.user_b_id : data.user_a_id;
+      const friendProfile = (isUserA ? data.user_b : data.user_a) as {
+        display_name: string;
+        profile_pic_url: string | null;
+      };
+      const nickname = isUserA ? data.user_a_nickname : data.user_b_nickname;
+
+      router.push({
+        pathname: "/friend/[id]",
+        params: {
+          id: notif.related_friendship_id,
+          name: friendProfile.display_name,
+          pic: friendProfile.profile_pic_url ?? "",
+          friendId,
+          nickname: nickname ?? "",
+          isUserA: isUserA ? "true" : "false",
+        },
+      });
       return;
     }
 

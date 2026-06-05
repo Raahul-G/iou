@@ -13,9 +13,9 @@ module.exports = {
         },
         sand: "#F0DCDC",     // Soft Rose border/bg
         brown: {
-          warm: "#D4A5A5",   // Muted Rose — buttons/active states
+          warm: "#9e6060",   // Muted Rose — buttons/active states
           deep: "#3D2E2E",   // Deep Cocoa — main text
-          muted: "#8C7676",  // Soft Mauve — secondary text
+          muted: "#7a5f5f",  // Soft Mauve — secondary text
         },
         // Dark mode — "Midnight Snuggle"
         bark: {

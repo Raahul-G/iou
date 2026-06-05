@@ -15,9 +15,9 @@ export type WishStatus =
 
 export type Wish = {
   id: string;
-  partnership_id: string;
-  creator_id: string; // Fertilizer (User B)
-  target_id: string;  // Water (User A)
+  friendship_id: string;
+  creator_id: string;
+  target_id: string;
   text: string;
   mood: string;
   status: WishStatus;
@@ -37,18 +37,17 @@ const ACTIVE_STATUSES: WishStatus[] = ["active", "accepted", "on_hold", "fulfill
 const TERMINAL_STATUSES: WishStatus[] = ["confirmed", "withdrawn"];
 
 // ----------------------------------------------------------------
-// The current unresolved (slot-occupying) wish for a partnership.
-// Returns null when the slot is empty.
+// The current unresolved (slot-occupying) wish for a friendship.
 // ----------------------------------------------------------------
-export function useActiveWish(partnershipId: string | undefined) {
+export function useActiveWish(friendshipId: string | undefined) {
   return useQuery({
-    queryKey: ["wish", "active", partnershipId],
-    enabled: !!partnershipId,
+    queryKey: ["wish", "active", friendshipId],
+    enabled: !!friendshipId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wishes")
         .select("*")
-        .eq("partnership_id", partnershipId!)
+        .eq("friendship_id", friendshipId!)
         .in("status", ACTIVE_STATUSES)
         .maybeSingle();
 
@@ -61,15 +60,15 @@ export function useActiveWish(partnershipId: string | undefined) {
 // ----------------------------------------------------------------
 // Past wishes (confirmed or withdrawn), newest first.
 // ----------------------------------------------------------------
-export function useWishHistory(partnershipId: string | undefined) {
+export function useWishHistory(friendshipId: string | undefined) {
   return useQuery({
-    queryKey: ["wish", "history", partnershipId],
-    enabled: !!partnershipId,
+    queryKey: ["wish", "history", friendshipId],
+    enabled: !!friendshipId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wishes")
         .select("*")
-        .eq("partnership_id", partnershipId!)
+        .eq("friendship_id", friendshipId!)
         .in("status", TERMINAL_STATUSES)
         .order("created_at", { ascending: false });
 
@@ -80,9 +79,8 @@ export function useWishHistory(partnershipId: string | undefined) {
 }
 
 // ----------------------------------------------------------------
-// Create a wish (Fertilizer / User B only).
-// DB enforces the single-slot rule via a partial unique index —
-// this will error if a wish is already in the slot.
+// Create a wish for a friend to grant.
+// DB enforces the single-slot rule via a partial unique index.
 // ----------------------------------------------------------------
 export function useCreateWish() {
   const qc = useQueryClient();
@@ -90,13 +88,13 @@ export function useCreateWish() {
 
   return useMutation({
     mutationFn: async (payload: {
-      partnershipId: string;
+      friendshipId: string;
       targetId: string;
       text: string;
       mood: string;
     }) => {
       const { error } = await supabase.from("wishes").insert({
-        partnership_id: payload.partnershipId,
+        friendship_id: payload.friendshipId,
         creator_id: user!.id,
         target_id: payload.targetId,
         text: payload.text,
@@ -105,20 +103,13 @@ export function useCreateWish() {
       if (error) throw error;
     },
     onSuccess: (_data, variables) => {
-      qc.invalidateQueries({ queryKey: ["wish", "active", variables.partnershipId] });
+      qc.invalidateQueries({ queryKey: ["wish", "active", variables.friendshipId] });
     },
   });
 }
 
 // ----------------------------------------------------------------
-// All valid wish status transitions, typed as a discriminated union.
-//
-//   accept         active    → accepted   (User A)
-//   not_right_now  active    → on_hold    (User A, + optional sweet text + mood)
-//   withdraw       active    → withdrawn  (User B)
-//                  on_hold   → withdrawn  (User B)
-//   mark_done      accepted  → fulfilled  (User A)
-//   confirm        fulfilled → confirmed  (User B, + optional thank you note)
+// Wish status transitions.
 // ----------------------------------------------------------------
 type WishAction =
   | { action: "accept" }
@@ -133,50 +124,28 @@ export function useUpdateWishStatus() {
   return useMutation({
     mutationFn: async ({
       wishId,
-      partnershipId,
+      friendshipId,
       ...action
-    }: WishAction & { wishId: string; partnershipId: string }) => {
+    }: WishAction & { wishId: string; friendshipId: string }) => {
       let updates: WishUpdate;
 
       switch (action.action) {
-        case "accept":
-          updates = { status: "accepted" };
-          break;
-        case "not_right_now":
-          updates = {
-            status: "on_hold",
-            decline_text: action.decline_text ?? null,
-            decline_mood: action.decline_mood ?? null,
-          };
-          break;
-        case "withdraw":
-          updates = { status: "withdrawn" };
-          break;
-        case "mark_done":
-          updates = { status: "fulfilled" };
-          break;
-        case "confirm":
-          updates = {
-            status: "confirmed",
-            thank_you_note: action.thank_you_note ?? null,
-          };
-          break;
-        default:
-          return; // exhaustive — should never reach here
+        case "accept":        updates = { status: "accepted" }; break;
+        case "not_right_now": updates = { status: "on_hold", decline_text: action.decline_text ?? null, decline_mood: action.decline_mood ?? null }; break;
+        case "withdraw":      updates = { status: "withdrawn" }; break;
+        case "mark_done":     updates = { status: "fulfilled" }; break;
+        case "confirm":       updates = { status: "confirmed", thank_you_note: action.thank_you_note ?? null }; break;
+        default:              return;
       }
 
-      const { error } = await supabase
-        .from("wishes")
-        .update(updates)
-        .eq("id", wishId);
+      const { error } = await supabase.from("wishes").update(updates).eq("id", wishId);
       if (error) throw error;
     },
     onSuccess: (_data, variables) => {
-      qc.invalidateQueries({ queryKey: ["wish", "active", variables.partnershipId] });
-      qc.invalidateQueries({ queryKey: ["wish", "history", variables.partnershipId] });
-      // Confirmed wish changes tree score
+      qc.invalidateQueries({ queryKey: ["wish", "active", variables.friendshipId] });
+      qc.invalidateQueries({ queryKey: ["wish", "history", variables.friendshipId] });
       if (variables.action === "confirm") {
-        qc.invalidateQueries({ queryKey: ["tree"] });
+        qc.invalidateQueries({ queryKey: ["friend-tree"] });
       }
     },
   });

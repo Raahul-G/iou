@@ -6,40 +6,33 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { router } from "expo-router";
-import { usePartnership } from "@/hooks/use-partnerships";
+import { router, useLocalSearchParams } from "expo-router";
 import { useCreateWish } from "@/hooks/use-wishes";
 import { Button } from "@/components/ui/button";
 import { WISH_MOODS } from "@/constants/app";
 
 export default function NewWish() {
-  const { data: partnership } = usePartnership();
-  const createWish = useCreateWish();
+  const { friendshipId, targetId, friendName } = useLocalSearchParams<{
+    friendshipId: string;
+    targetId: string;
+    friendName?: string;
+  }>();
 
+  const createWish = useCreateWish();
   const [text, setText] = useState("");
   const [mood, setMood] = useState(WISH_MOODS[0].key);
   const [error, setError] = useState<string | null>(null);
 
   const handleCreate = async () => {
     const trimmed = text.trim();
-    if (!trimmed || !partnership || partnership.status !== "active") return;
-
-    // Target is always the other partner
-    const targetId = partnership.partner_id;
+    if (!trimmed || !friendshipId || !targetId) return;
 
     setError(null);
     try {
-      await createWish.mutateAsync({
-        partnershipId: partnership.id,
-        targetId,
-        text: trimmed,
-        mood,
-      });
+      await createWish.mutateAsync({ friendshipId, targetId, text: trimmed, mood });
       router.back();
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "Could not create wish. Try again."
-      );
+      setError(err instanceof Error ? err.message : "Could not create wish. Try again.");
     }
   };
 
@@ -54,7 +47,7 @@ export default function NewWish() {
           <Text className="text-base text-brown-warm dark:text-umber">Cancel</Text>
         </Pressable>
         <Text className="flex-1 text-lg font-semibold text-brown-deep dark:text-offwhite">
-          Make a wish ✨
+          {friendName ? `Wish for ${friendName} ✨` : "Make a wish ✨"}
         </Text>
       </View>
 
@@ -83,11 +76,7 @@ export default function NewWish() {
             autoFocus
             className="bg-white dark:bg-bark-card border border-sand dark:border-[#3D2B3D] rounded-xl px-4 py-3 text-base text-brown-deep dark:text-offwhite min-h-[120px]"
           />
-          <Text
-            className={`text-xs text-right ${
-              overLimit ? "text-red-500" : "text-brown-muted dark:text-[#8A7385]"
-            }`}
-          >
+          <Text className={`text-xs text-right ${overLimit ? "text-red-500" : "text-brown-muted dark:text-[#8A7385]"}`}>
             {charCount}/280
           </Text>
         </View>
@@ -111,11 +100,7 @@ export default function NewWish() {
                   }`}
                 >
                   <Text>{m.emoji}</Text>
-                  <Text
-                    className={`text-sm font-medium ${
-                      isSelected ? "text-white" : "text-brown-deep dark:text-offwhite"
-                    }`}
-                  >
+                  <Text className={`text-sm font-medium ${isSelected ? "text-white" : "text-brown-deep dark:text-offwhite"}`}>
                     {m.label}
                   </Text>
                 </Pressable>
