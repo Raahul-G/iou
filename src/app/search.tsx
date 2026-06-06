@@ -9,7 +9,7 @@ import {
 import { router } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
-import { useSendFriendRequest } from "@/hooks/use-friends";
+import { useFriends, useSendFriendRequest } from "@/hooks/use-friends";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -28,6 +28,12 @@ export default function SearchScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const sendRequest = useSendFriendRequest();
+  const { data: friends } = useFriends();
+
+  const isAlreadyFriend =
+    result && result !== "not-found"
+      ? (friends ?? []).some((f) => f.friend_id === result.id)
+      : false;
 
   const handleSearch = async () => {
     const trimmed = email.trim().toLowerCase();
@@ -145,7 +151,13 @@ export default function SearchScreen() {
               </View>
             </View>
 
-            {requestSent ? (
+            {isAlreadyFriend ? (
+              <View className="rounded-lg bg-green-50 dark:bg-green-950 px-4 py-3">
+                <Text className="text-sm font-medium text-green-700 dark:text-green-400 text-center">
+                  Already friends ✓
+                </Text>
+              </View>
+            ) : requestSent ? (
               <View className="rounded-lg bg-green-50 dark:bg-green-950 px-4 py-3">
                 <Text className="text-sm font-medium text-green-700 dark:text-green-400 text-center">
                   Friend request sent ✓
