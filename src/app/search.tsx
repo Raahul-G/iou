@@ -88,7 +88,7 @@ export default function SearchScreen() {
       {/* Header */}
       <View className="flex-row items-center gap-3 px-5 pt-14 pb-4 border-b border-sand dark:border-[#3D2B3D]">
         <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Text className="text-base text-brown-warm dark:text-umber">← Back</Text>
+          <Text className="text-base text-brown-warm dark:text-umber">Back</Text>
         </Pressable>
         <Text className="text-lg font-semibold text-brown-deep dark:text-offwhite">
           Add a friend
