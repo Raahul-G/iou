@@ -94,12 +94,19 @@ function IOURow({
     declined: "Declined",
   }[iou.status];
 
+  const isCompleted = iou.status === "completed";
+
   return (
-    <View className={`rounded-2xl px-4 py-3 border gap-2 ${
-      isActive
-        ? "bg-white dark:bg-bark-card border-sand dark:border-[#3D2B3D]"
-        : "bg-sand/30 dark:bg-[#160F16] border-sand dark:border-[#3D2B3D]"
-    }`}>
+    <View
+      className={`rounded-2xl px-4 py-3 border gap-2 ${
+        isActive
+          ? "bg-white dark:bg-bark-card border-sand dark:border-[#3D2B3D]"
+          : isCompleted
+          ? "bg-white dark:bg-bark-card border-sand dark:border-[#3D2B3D]"
+          : "bg-sand/20 dark:bg-[#160F16]/60 border-sand/40 dark:border-[#3D2B3D]/40"
+      }`}
+      style={!isActive && !isCompleted ? { opacity: 0.6 } : undefined}
+    >
       <View className="flex-row items-center gap-3">
         <Text className="text-xl">{emoji}</Text>
         <View className="flex-1">
@@ -113,23 +120,17 @@ function IOURow({
           )}
         </View>
         {!isActive && (
-          <View
-            className={`rounded-full px-2.5 py-1 flex-row items-center justify-center gap-1.5 ${
-              iou.status === "completed"
-                ? "bg-emerald-50 dark:bg-emerald-950/40"
-                : "bg-red-50 dark:bg-red-950/30"
-            }`}
-            style={{ minWidth: 90 }}
-          >
-            <View className={`w-1.5 h-1.5 rounded-full ${
-              iou.status === "completed" ? "bg-emerald-500" : "bg-red-400"
-            }`} />
-            <Text className={`text-xs font-semibold ${
-              iou.status === "completed"
-                ? "text-emerald-700 dark:text-emerald-400"
-                : "text-red-500 dark:text-red-400"
+          <View className={`w-6 h-6 rounded-full items-center justify-center ${
+            isCompleted
+              ? "bg-emerald-50 dark:bg-emerald-950/40"
+              : "bg-sand dark:bg-[#3D2B3D]"
+          }`}>
+            <Text className={`text-xs font-bold ${
+              isCompleted
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-brown-muted dark:text-[#8A7385]"
             }`}>
-              {iou.status === "completed" ? "Completed" : "Declined"}
+              {isCompleted ? "✓" : "✕"}
             </Text>
           </View>
         )}
