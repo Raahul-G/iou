@@ -7,6 +7,7 @@ module.exports = {
     extend: {
       colors: {
         // Light mode — "Morning Coffee"
+        "auth-bg": "#fff1e4",  // Auth screens background
         cream: {
           DEFAULT: "#FFFDF9", // Warm Cream
           dark: "#F5EDEE",

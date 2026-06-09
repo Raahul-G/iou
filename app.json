@@ -15,7 +15,7 @@
       "package": "com.fridayvision.iou",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/app-icon.png",
-        "backgroundColor": "#FFF8F3"
+        "backgroundColor": "#fff1e4"
       },
       "predictiveBackGestureEnabled": false
     },
@@ -35,7 +35,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#FFF8F3",
+          "backgroundColor": "#fff1e4",
           "android": {
             "image": "./assets/images/splash-icon.png",
             "imageWidth": 200

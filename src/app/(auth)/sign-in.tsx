@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -99,20 +100,26 @@ export default function SignIn() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-cream dark:bg-bark"
+      className="flex-1 bg-auth-bg dark:bg-bark"
     >
       <ScrollView
         contentContainerClassName="flex-1 justify-center px-6 py-12"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* App name */}
+        {/* App logo */}
         <View className="items-center mb-10">
-          <Text className="text-5xl font-semibold tracking-tight text-brown-deep dark:text-offwhite">
-            IOU
-          </Text>
-          <Text className="mt-1 text-base text-brown-muted dark:text-[#8A7385]">
-            Favours between friends
+          <Image
+            source={require("../../../assets/images/splash-icon.png")}
+            style={{ width: 96, height: 96 }}
+            resizeMode="contain"
+            pointerEvents="none"
+          />
+          <Text
+            style={{ fontFamily: "DancingScript_600SemiBold", fontSize: 20 }}
+            className="mt-3 text-brown-muted dark:text-[#8A7385]"
+          >
+            Little things, remembered
           </Text>
         </View>
 

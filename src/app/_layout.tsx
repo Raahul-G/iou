@@ -6,6 +6,7 @@ import * as SplashScreen from "expo-splash-screen";
 import * as Linking from "expo-linking";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Platform, useColorScheme } from "react-native";
+import { useFonts, DancingScript_600SemiBold } from "@expo-google-fonts/dancing-script";
 import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/query-client";
 import { useAuthStore } from "@/store/auth.store";
@@ -135,6 +136,7 @@ function AuthGuard() {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  useFonts({ DancingScript_600SemiBold });
 
   return (
     <QueryClientProvider client={queryClient}>

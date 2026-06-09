@@ -97,7 +97,7 @@ export default function Verify() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-cream dark:bg-bark"
+      className="flex-1 bg-auth-bg dark:bg-bark"
     >
       <View className="flex-1 justify-center px-6 py-12">
         {/* Header */}
