@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   Alert,
   Image,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -192,6 +193,17 @@ export default function Settings() {
           trackColor={{ true: "#D4A5A5" }}
           thumbColor="#fff"
         />
+      </View>
+
+      {/* About */}
+      <View className="bg-white dark:bg-bark-card rounded-xl border border-sand dark:border-[#3D2B3D] overflow-hidden">
+        <Pressable
+          onPress={() => Linking.openURL("https://myiou.app/privacy")}
+          className="px-4 py-4 flex-row items-center justify-between"
+        >
+          <Text className="text-base text-brown-deep dark:text-offwhite">Privacy Policy</Text>
+          <Text className="text-brown-muted dark:text-[#8A7385]">›</Text>
+        </Pressable>
       </View>
 
       {/* Logout */}
