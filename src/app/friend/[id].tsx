@@ -273,7 +273,7 @@ export default function FriendDetail() {
   const visibleIOUs = showAllHistory ? allIOUs : allIOUs.slice(0, 3);
 
   const displayName  = currentNickname || name;
-  const wishNewParams = { friendshipId: id, targetId: friendId, friendName: friendFirst };
+  const wishNewParams = { friendshipId: id, targetId: friendId, friendName: displayName };
 
   return (
     <ScrollView
