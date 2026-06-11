@@ -1,6 +1,7 @@
 import "../global.css";
 import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
+import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import * as Linking from "expo-linking";
@@ -140,6 +141,20 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <Head>
+        <title>IOU — Little things, remembered.</title>
+        <meta name="description" content="Track favours, make wishes, and grow your friendship tree. Private, free, and built for the friends who always show up." />
+        <meta property="og:title" content="IOU — Little things, remembered." />
+        <meta property="og:description" content="Track favours, make wishes, and grow your friendship tree. Private, free, and built for the friends who always show up." />
+        <meta property="og:image" content="https://myiou.app/app-icon.png" />
+        <meta property="og:url" content="https://myiou.app" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="IOU — Little things, remembered." />
+        <meta name="twitter:description" content="Track favours, make wishes, and grow your friendship tree." />
+        <meta name="twitter:image" content="https://myiou.app/app-icon.png" />
+        <meta name="theme-color" content="#fff1e4" />
+      </Head>
       <AuthGuard />
       <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }} />
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
