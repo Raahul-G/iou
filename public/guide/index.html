@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IOU — User Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #fff1e4;
+      color: #3D2E2E;
+      line-height: 1.7;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #fff1e4;
+      padding: 48px 24px 32px;
+      text-align: center;
+      border-bottom: 1px solid #F0DCDC;
+    }
+
+    .header img.logo {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 12px;
+    }
+
+    .header h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: #3D2E2E;
+      letter-spacing: -0.5px;
+    }
+
+    .header .tagline {
+      font-family: 'Dancing Script', cursive;
+      font-size: 22px;
+      color: #7a5f5f;
+      margin-top: 4px;
+    }
+
+    /* ── Container ── */
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+    }
+
+    /* ── Intro ── */
+    .intro {
+      background: white;
+      border: 1px solid #F0DCDC;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .intro p {
+      color: #7a5f5f;
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    /* ── Section ── */
+    .section {
+      margin-bottom: 48px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .section-icon {
+      font-size: 24px;
+    }
+
+    .section h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #3D2E2E;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: white;
+      border: 1px solid #F0DCDC;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .card p {
+      color: #4a3a3a;
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+
+    .card p:last-child { margin-bottom: 0; }
+
+    /* ── Screenshot + content row ── */
+    .row {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      background: white;
+      border: 1px solid #F0DCDC;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .row .screenshot {
+      flex-shrink: 0;
+      width: 130px;
+    }
+
+    .row .screenshot img {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid #F0DCDC;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    .row .content { flex: 1; }
+
+    .row .content h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #3D2E2E;
+      margin-bottom: 10px;
+    }
+
+    .row .content p {
+      font-size: 14px;
+      color: #4a3a3a;
+      margin-bottom: 8px;
+    }
+
+    .row .content p:last-child { margin-bottom: 0; }
+
+    /* ── Steps ── */
+    ol.steps {
+      padding-left: 20px;
+      margin: 10px 0;
+    }
+
+    ol.steps li {
+      font-size: 14px;
+      color: #4a3a3a;
+      margin-bottom: 6px;
+      line-height: 1.6;
+    }
+
+    /* ── Tip ── */
+    .tip {
+      background: #fff1e4;
+      border: 1px solid #F0DCDC;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-top: 12px;
+      font-size: 14px;
+      color: #7a5f5f;
+    }
+
+    .tip strong { color: #9e6060; }
+
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+
+    th {
+      background: #fff1e4;
+      color: #7a5f5f;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid #F0DCDC;
+    }
+
+    td {
+      padding: 10px 14px;
+      color: #4a3a3a;
+      border-bottom: 1px solid #F0DCDC;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    /* ── Tree states ── */
+    .tree-states {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .tree-state {
+      background: #fff1e4;
+      border: 1px solid #F0DCDC;
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .tree-state .emoji { font-size: 32px; margin-bottom: 8px; }
+
+    .tree-state h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #3D2E2E;
+      margin-bottom: 4px;
+    }
+
+    .tree-state p {
+      font-size: 12px;
+      color: #7a5f5f;
+      line-height: 1.5;
+    }
+
+    /* ── Points badge ── */
+    .points-row {
+      display: flex;
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .points-badge {
+      flex: 1;
+      background: white;
+      border: 1px solid #F0DCDC;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .points-badge .pts {
+      font-size: 36px;
+      font-weight: 700;
+      color: #9e6060;
+    }
+
+    .points-badge .label {
+      font-size: 13px;
+      color: #7a5f5f;
+      margin-top: 4px;
+    }
+
+    /* ── Quick ref ── */
+    .quick-ref {
+      background: white;
+      border: 1px solid #F0DCDC;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 32px 24px;
+      border-top: 1px solid #F0DCDC;
+      font-size: 14px;
+      color: #7a5f5f;
+    }
+
+    .footer a {
+      color: #9e6060;
+      text-decoration: none;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 560px) {
+      .row { flex-direction: column; }
+      .row .screenshot { width: 100%; max-width: 200px; margin: 0 auto; }
+      .tree-states { grid-template-columns: 1fr 1fr; }
+      .points-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <img class="logo" src="/splash-icon.png" alt="IOU" />
+    <p class="tagline">Little things, remembered.</p>
+  </div>
+
+  <div class="container">
+
+    <!-- Intro -->
+    <div class="intro">
+      <p>
+        IOU is a private space to track the little things between you and your closest friends.<br />
+        Favours given, favours owed, wishes made — and a living tree that grows<br />
+        when both of you show up for each other.<br /><br />
+        <strong>No social feed. No strangers. Just you and your people.</strong>
+      </p>
+    </div>
+
+    <!-- Getting Started -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">👋</span>
+        <h2>Getting Started</h2>
+      </div>
+
+      <div class="row">
+        <div class="screenshot">
+          <img src="/guide/screenshots/login.png" alt="Login screen" />
+        </div>
+        <div class="content">
+          <h3>Sign up & add your first friend</h3>
+          <p>Sign up with your email or Google account. Set your display name and profile picture.</p>
+          <p>On the Home screen, tap <strong>+ Friend</strong> and search by your friend's email. Once they accept — your friendship and your Living Tree begins.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- IOUs -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">🤝</span>
+        <h2>IOUs — Track What You Owe</h2>
+      </div>
+
+      <div class="row">
+        <div class="screenshot">
+          <img src="/guide/screenshots/iou.png" alt="IOU screen" />
+        </div>
+        <div class="content">
+          <h3>Creating an IOU</h3>
+          <ol class="steps">
+            <li>Open a friend's screen → tap <strong>+ New IOU</strong></li>
+            <li>Write what you owe (or what they owe you)</li>
+            <li>Pick a category — Coffee, Food, Drinks, Favour, Money, or Other</li>
+            <li>Add an optional note for context</li>
+            <li>Tap <strong>Create IOU</strong></li>
+          </ol>
+          <p style="margin-top: 10px;">Both people must agree it's complete. No shortcuts — that's what makes it honest.</p>
+          <div class="tip">💡 <strong>Tip:</strong> You earn <strong>+1 point</strong> every time an IOU you created gets completed.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p><strong>The IOU lifecycle:</strong></p>
+        <table>
+          <thead>
+            <tr><th>Status</th><th>What it means</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>📬 Pending</td><td>Waiting for your friend to respond</td></tr>
+            <tr><td>✅ Accepted</td><td>Both of you acknowledge it</td></tr>
+            <tr><td>🔔 Completion requested</td><td>Creator says "I did it"</td></tr>
+            <tr><td>✓ Completed</td><td>Receiver confirms it's done</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Wishes -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">💌</span>
+        <h2>Wishes — Ask for What You Need</h2>
+      </div>
+
+      <div class="row">
+        <div class="screenshot">
+          <img src="/guide/screenshots/wish.png" alt="Wish screen" />
+        </div>
+        <div class="content">
+          <h3>Making a wish</h3>
+          <ol class="steps">
+            <li>Open a friend's screen → scroll to <strong>Wish</strong></li>
+            <li>Tap <strong>Plant a wish ✨</strong></li>
+            <li>Write your wish — be specific or keep it soft</li>
+            <li>Pick a mood — Playful 🎉, Cozy 🤗, Sweet 🍯, Heartfelt 💝, Fun 🎮, or Calm 🌿</li>
+            <li>Tap <strong>Send wish 💌</strong></li>
+          </ol>
+          <div class="tip">💡 <strong>Tip:</strong> Only <strong>one active wish</strong> per friendship at a time. Make it count.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p><strong>What happens after you send a wish:</strong></p>
+        <p>Your friend can <strong>Accept</strong> or say <strong>Not Right Now</strong> (with a kind note back). If accepted, they fulfil it in real life and tap <strong>Mark Done</strong>. You confirm it happened — and optionally write a thank you note.</p>
+        <div class="tip">🌟 <strong>Points:</strong> The friend who <strong>fulfils</strong> a wish earns <strong>+2 points</strong>.</div>
+      </div>
+    </div>
+
+    <!-- Living Tree -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">🌳</span>
+        <h2>The Living Tree</h2>
+      </div>
+
+      <div class="row">
+        <div class="screenshot">
+          <img src="/guide/screenshots/friend.png" alt="Friend screen" />
+        </div>
+        <div class="content">
+          <h3>Your friendship, made visible</h3>
+          <p>Every friendship has a living tree — shared between you and your friend. It reflects the effort you both put in over the last <strong>14 days</strong>.</p>
+          <p>The tree is always visible on your friend's screen, and as a small emoji next to their name on the Home screen.</p>
+        </div>
+      </div>
+
+      <div class="tree-states">
+        <div class="tree-state">
+          <div class="emoji">🌳</div>
+          <h4>Growing</h4>
+          <p>Both of you are showing up consistently</p>
+        </div>
+        <div class="tree-state">
+          <div class="emoji">🌱</div>
+          <h4>Dull</h4>
+          <p>One of you has gone quiet — the tree is thirsty</p>
+        </div>
+        <div class="tree-state">
+          <div class="emoji">💀</div>
+          <h4>Dead</h4>
+          <p>No activity from either side for 28+ days</p>
+        </div>
+        <div class="tree-state">
+          <div class="emoji">🌿</div>
+          <h4>Seedling</h4>
+          <p>You've come back after a break — fresh start, history kept</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Points -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">⭐</span>
+        <h2>Points — How They Work</h2>
+      </div>
+
+      <div class="card">
+        <p>Points are calculated over a <strong>rolling 14-day window</strong> — they update continuously, not monthly.</p>
+
+        <div class="points-row">
+          <div class="points-badge">
+            <div class="pts">+1</div>
+            <div class="label">Your IOU gets completed</div>
+          </div>
+          <div class="points-badge">
+            <div class="pts">+2</div>
+            <div class="label">You fulfil a friend's wish</div>
+          </div>
+        </div>
+
+        <p>The tree stays <strong>alive</strong> when both of you contribute — and the less-active person earns at least <strong>half</strong> of what the more-active person earned. The threshold adapts to your natural rhythm.</p>
+
+        <div class="tip">
+          📖 <strong>Example:</strong> You earned 6 points this fortnight. Your friend needs at least 3 to keep the tree healthy. If they've earned 4 — you're growing 🌳. If they've earned 1 — the tree goes dull 🌱.
+        </div>
+      </div>
+    </div>
+
+    <!-- Keeping Tree Alive -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">💧</span>
+        <h2>Keeping the Tree Alive</h2>
+      </div>
+
+      <div class="card">
+        <p>The tree is a quiet signal, not a score. Here's how to keep it healthy:</p>
+        <table>
+          <tbody>
+            <tr><td>🤝</td><td><strong>Complete IOUs</strong> — both creating and confirming them counts</td></tr>
+            <tr><td>💌</td><td><strong>Make and fulfil wishes</strong> — wishes are worth double points</td></tr>
+            <tr><td>📅</td><td><strong>Stay consistent</strong> — one burst then silence will fade the tree</td></tr>
+            <tr><td>👫</td><td><strong>Both of you matter</strong> — one active person can't carry the tree alone</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top: 12px;">If your tree goes dull, you'll get a gentle notification. If it dies — don't worry. Start a new IOU or make a wish and it comes back as a seedling 🌿. All your history is kept.</p>
+      </div>
+    </div>
+
+    <!-- Quick Reference -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-icon">📋</span>
+        <h2>Quick Reference</h2>
+      </div>
+
+      <div class="quick-ref">
+        <table>
+          <thead>
+            <tr><th>What you want to do</th><th>How to get there</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Add a friend</td><td>Home → <strong>+ Friend</strong></td></tr>
+            <tr><td>New IOU</td><td>Friend screen → <strong>+ New IOU</strong></td></tr>
+            <tr><td>Make a wish</td><td>Friend screen → <strong>Plant a wish ✨</strong></td></tr>
+            <tr><td>See your tree</td><td>Friend screen → top section</td></tr>
+            <tr><td>Set a nickname</td><td>Friend screen → tap ✏️ next to their name</td></tr>
+            <tr><td>Change theme</td><td>Settings → Appearance</td></tr>
+            <tr><td>Privacy policy</td><td>Settings → Privacy Policy</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>IOU is free. No ads. No subscriptions. Just you and the people who matter.</p>
+    <p style="margin-top: 8px;">Questions? <a href="mailto:support@myiou.app">support@myiou.app</a></p>
+  </div>
+
+</body>
+</html>
