@@ -12,6 +12,7 @@ import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { supabase } from "@/lib/supabase";
+import { captureError } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Divider } from "@/components/ui/divider";
@@ -87,10 +88,18 @@ export default function SignIn() {
           result.url
         );
         if (error) throw error;
+      } else if (result.type !== "success") {
+        captureError(new Error(`OAuth browser closed: ${result.type}`), {
+          flow: "google_sign_in",
+          result_type: result.type,
+        });
       }
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Google sign-in failed.";
+      captureError(err instanceof Error ? err : new Error(message), {
+        flow: "google_sign_in",
+      });
       setError(message);
     } finally {
       setGoogleLoading(false);
