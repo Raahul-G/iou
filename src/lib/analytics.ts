@@ -24,7 +24,7 @@ export function trackOAuthRedirect(url: string) {
   Sentry.addBreadcrumb({
     category: "auth.oauth",
     message: "deep_link_received",
-    data: { url },
+    data: { url: url.split("?")[0].split("#")[0] }, // strip query params + fragment
     level: "info",
   });
 }

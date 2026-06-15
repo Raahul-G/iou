@@ -13,7 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/query-client";
 import { useAuthStore } from "@/store/auth.store";
 import { applyTheme } from "@/lib/theme";
-import { identifyUser, clearUser, trackOAuthRedirect } from "@/lib/analytics";
+import { identifyUser, clearUser, trackOAuthRedirect, captureError } from "@/lib/analytics";
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -64,7 +64,14 @@ function AuthGuard() {
     const handleUrl = async ({ url }: { url: string }) => {
       if (url.includes("code=") || url.includes("access_token")) {
         trackOAuthRedirect(url);
-        await supabase.auth.exchangeCodeForSession(url);
+        try {
+          const { error } = await supabase.auth.exchangeCodeForSession(url);
+          if (error) captureError(error, { flow: "oauth_deep_link" });
+        } catch (err) {
+          captureError(err instanceof Error ? err : new Error(String(err)), {
+            flow: "oauth_deep_link",
+          });
+        }
       }
     };
 
