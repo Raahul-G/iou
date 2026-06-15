@@ -5,6 +5,7 @@ import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import * as Linking from "expo-linking";
+import * as Sentry from "@sentry/react-native";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Platform, useColorScheme } from "react-native";
 import { useFonts, DancingScript_600SemiBold } from "@expo-google-fonts/dancing-script";
@@ -12,6 +13,15 @@ import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/query-client";
 import { useAuthStore } from "@/store/auth.store";
 import { applyTheme } from "@/lib/theme";
+import { identifyUser, clearUser, trackOAuthRedirect } from "@/lib/analytics";
+
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  environment: __DEV__ ? "development" : "production",
+  tracesSampleRate: 1.0,
+  enableAutoSessionTracking: true,
+  attachStacktrace: true,
+});
 
 const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
 const LAST_ACTIVITY_KEY = "iou_last_activity";
@@ -53,6 +63,7 @@ function AuthGuard() {
   useEffect(() => {
     const handleUrl = async ({ url }: { url: string }) => {
       if (url.includes("code=") || url.includes("access_token")) {
+        trackOAuthRedirect(url);
         await supabase.auth.exchangeCodeForSession(url);
       }
     };
@@ -78,6 +89,7 @@ function AuthGuard() {
         setSession(newSession);
 
         if (newSession?.user) {
+          identifyUser(newSession.user.id, newSession.user.email);
           setLoading(false);
           SplashScreen.hideAsync();
 
@@ -101,6 +113,7 @@ function AuthGuard() {
               }
             );
         } else {
+          clearUser();
           reset();
           // Auth screens always show in light mode — reset any previous user's theme override
           applyTheme("light");
