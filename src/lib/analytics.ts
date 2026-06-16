@@ -20,11 +20,12 @@ export function trackSignOut() {
   Sentry.addBreadcrumb({ category: "auth", message: "sign_out", level: "info" });
 }
 
-export function trackOAuthRedirect(url: string) {
+export function trackOAuthRedirect(url: string, opts?: { debug?: boolean }) {
   Sentry.addBreadcrumb({
     category: "auth.oauth",
     message: "deep_link_received",
-    data: { url: url.split("?")[0].split("#")[0] }, // strip query params + fragment
+    // debug=true temporarily logs full URL to diagnose OAuth bug — remove after fix
+    data: { url: opts?.debug ? url : url.split("?")[0].split("#")[0] },
     level: "info",
   });
 }

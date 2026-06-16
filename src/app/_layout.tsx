@@ -61,24 +61,29 @@ function AuthGuard() {
 
   // Handle OAuth deep-link callbacks (Google sign-in redirect back to app)
   useEffect(() => {
+    let lastHandledUrl: string | null = null;
+
     const handleUrl = async ({ url }: { url: string }) => {
+      // Deduplicate — getInitialURL and addEventListener both fire for OAuth redirects
+      if (url === lastHandledUrl) return;
+      lastHandledUrl = url;
+
       if (url.includes("code=") || url.includes("access_token")) {
-        trackOAuthRedirect(url);
+        // Temporarily log full URL (with code) to diagnose OAuth issue — remove after fix
+        trackOAuthRedirect(url, { debug: true });
         try {
           const { error } = await supabase.auth.exchangeCodeForSession(url);
-          if (error) captureError(error, { flow: "oauth_deep_link" });
+          if (error) captureError(error, { flow: "oauth_deep_link", url });
         } catch (err) {
           captureError(err instanceof Error ? err : new Error(String(err)), {
             flow: "oauth_deep_link",
+            url,
           });
         }
       }
     };
 
-    Linking.getInitialURL().then((url) => {
-      if (url) handleUrl({ url });
-    });
-
+    // Only use addEventListener for OAuth — OAuth is always a warm start (app already running)
     const sub = Linking.addEventListener("url", handleUrl);
     return () => sub.remove();
   }, []);
