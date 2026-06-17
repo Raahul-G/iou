@@ -13,7 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/query-client";
 import { useAuthStore } from "@/store/auth.store";
 import { applyTheme } from "@/lib/theme";
-import { identifyUser, clearUser, trackOAuthRedirect, captureError } from "@/lib/analytics";
+import { identifyUser, clearUser, trackOAuthRedirect } from "@/lib/analytics";
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -59,31 +59,17 @@ function AuthGuard() {
     };
   }, []);
 
-  // Handle OAuth deep-link callbacks (Google sign-in redirect back to app)
+  // Log OAuth deep-link callbacks for debugging.
+  // NOTE: do NOT call exchangeCodeForSession here — sign-in.tsx handles code exchange
+  // via openAuthSessionAsync result. Calling it here too causes a double-exchange that
+  // consumes the PKCE code_verifier on the first call, leaving nothing for the second.
   useEffect(() => {
-    let lastHandledUrl: string | null = null;
-
-    const handleUrl = async ({ url }: { url: string }) => {
-      // Deduplicate — getInitialURL and addEventListener both fire for OAuth redirects
-      if (url === lastHandledUrl) return;
-      lastHandledUrl = url;
-
+    const handleUrl = ({ url }: { url: string }) => {
       if (url.includes("code=") || url.includes("access_token")) {
-        // Temporarily log full URL (with code) to diagnose OAuth issue — remove after fix
-        trackOAuthRedirect(url, { debug: true });
-        try {
-          const { error } = await supabase.auth.exchangeCodeForSession(url);
-          if (error) captureError(error, { flow: "oauth_deep_link", url });
-        } catch (err) {
-          captureError(err instanceof Error ? err : new Error(String(err)), {
-            flow: "oauth_deep_link",
-            url,
-          });
-        }
+        trackOAuthRedirect(url);
       }
     };
 
-    // Only use addEventListener for OAuth — OAuth is always a warm start (app already running)
     const sub = Linking.addEventListener("url", handleUrl);
     return () => sub.remove();
   }, []);
