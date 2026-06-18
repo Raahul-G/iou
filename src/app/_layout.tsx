@@ -120,7 +120,7 @@ function AuthGuard() {
         setSession(newSession);
 
         if (newSession?.user) {
-          identifyUser(newSession.user.id, newSession.user.email);
+          identifyUser(newSession.user.id);
           setLoading(false);
           SplashScreen.hideAsync();
 

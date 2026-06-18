@@ -2,8 +2,8 @@ import * as Sentry from "@sentry/react-native";
 
 // ─── User context ───────────────────────────────────────────────────────────
 
-export function identifyUser(userId: string, email?: string) {
-  Sentry.setUser({ id: userId, email });
+export function identifyUser(userId: string) {
+  Sentry.setUser({ id: userId });
 }
 
 export function clearUser() {

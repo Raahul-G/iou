@@ -9,21 +9,15 @@ import {
   View,
 } from "react-native";
 import { router } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
-import * as Linking from "expo-linking";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Divider } from "@/components/ui/divider";
-
-WebBrowser.maybeCompleteAuthSession();
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
@@ -68,54 +62,6 @@ export default function SignUp() {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleGoogleSignUp = async () => {
-    setErrors({});
-    setGoogleLoading(true);
-
-    try {
-      // Web: full-page redirect — browser handles the OAuth flow natively.
-      if (Platform.OS === "web") {
-        const redirectTo =
-          typeof window !== "undefined" ? window.location.origin : undefined;
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: { redirectTo },
-        });
-        if (error) throw error;
-        return;
-      }
-
-      // Android: open OAuth URL in an in-app browser and capture the redirect.
-      const redirectUrl = Linking.createURL("/");
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: redirectUrl, skipBrowserRedirect: true },
-      });
-
-      if (error) throw error;
-      if (!data.url) throw new Error("No OAuth URL returned.");
-
-      const result = await WebBrowser.openAuthSessionAsync(
-        data.url,
-        redirectUrl
-      );
-
-      if (result.type === "success" && result.url) {
-        const { error } = await supabase.auth.exchangeCodeForSession(
-          result.url
-        );
-        if (error) throw error;
-      }
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Google sign-up failed.";
-      setErrors({ form: message });
-    } finally {
-      setGoogleLoading(false);
     }
   };
 
@@ -190,15 +136,6 @@ export default function SignUp() {
             label="Create account"
             onPress={handleSignUp}
             loading={loading}
-          />
-
-          <Divider />
-
-          <Button
-            label="Continue with Google"
-            onPress={handleGoogleSignUp}
-            variant="secondary"
-            loading={googleLoading}
           />
         </View>
 
