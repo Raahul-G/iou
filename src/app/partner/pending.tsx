@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { router } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   usePartnership,
   useAcceptPartnerInvite,
@@ -48,6 +49,7 @@ export default function PartnerPending() {
     return null;
   }
 
+  const insets = useSafeAreaInsets();
   const isInvitee = partnership.inviter_id !== user?.id;
   const myRole = partnership.my_role;
   const partnerRole = OTHER_ROLE[myRole];
@@ -95,7 +97,7 @@ export default function PartnerPending() {
   return (
     <View className="flex-1 bg-cream dark:bg-bark">
       {/* Header */}
-      <View className="flex-row items-center px-5 pt-14 pb-4 border-b border-sand dark:border-[#3D2B3D]">
+      <View className="flex-row items-center px-5 pb-4 border-b border-sand dark:border-[#3D2B3D]" style={{ paddingTop: insets.top + 16 }}>
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <Text className="text-base text-brown-warm dark:text-umber">Back</Text>
         </Pressable>

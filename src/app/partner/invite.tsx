@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { router } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFriends, type FriendProfile } from "@/hooks/use-friends";
 import {
   useSendPartnerInvite,
@@ -44,6 +45,7 @@ export default function PartnerInvite() {
 
   const { data: friends, isLoading } = useFriends();
   const sendInvite = useSendPartnerInvite();
+  const insets = useSafeAreaInsets();
 
   const handleSend = async () => {
     if (!selectedFriend) return;
@@ -66,7 +68,7 @@ export default function PartnerInvite() {
   return (
     <View className="flex-1 bg-cream dark:bg-bark">
       {/* Header */}
-      <View className="flex-row items-center gap-3 px-5 pt-14 pb-4 border-b border-sand dark:border-[#3D2B3D]">
+      <View className="flex-row items-center gap-3 px-5 pb-4 border-b border-sand dark:border-[#3D2B3D]" style={{ paddingTop: insets.top + 16 }}>
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <Text className="text-base text-brown-warm dark:text-umber">Cancel</Text>
         </Pressable>

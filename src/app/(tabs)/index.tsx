@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { router } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthStore } from "@/store/auth.store";
 import { useFriends, type FriendProfile } from "@/hooks/use-friends";
 import { useScores } from "@/hooks/use-ious";
@@ -70,7 +71,7 @@ function FriendCard({ friend }: { friend: FriendProfile }) {
       {/* Info */}
       <View className="flex-1 gap-0.5">
         <View className="flex-row items-center gap-1.5">
-          <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
+          <Text className="text-base font-semibold text-brown-deep dark:text-offwhite" numberOfLines={1}>
             {label}
           </Text>
           <Text style={{ fontSize: 14 }}>{tree}</Text>
@@ -96,11 +97,13 @@ export default function Dashboard() {
     refetch: refetchFriends,
     isRefetching,
   } = useFriends();
+  const insets = useSafeAreaInsets();
 
   return (
     <ScrollView
       className="flex-1 bg-cream dark:bg-bark"
-      contentContainerClassName="px-5 pt-14 pb-8 gap-6"
+      contentContainerClassName="px-5 pb-8 gap-6"
+      contentContainerStyle={{ paddingTop: insets.top + 16 }}
       refreshControl={
         <RefreshControl refreshing={isRefetching} onRefresh={refetchFriends} />
       }

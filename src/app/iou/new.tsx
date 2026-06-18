@@ -5,8 +5,10 @@ import {
   Text,
   TextInput,
   View,
+  useColorScheme,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCreateIOU } from "@/hooks/use-ious";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +26,8 @@ export default function NewIOU() {
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const createIOU = useCreateIOU();
+  const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
 
   const handleCreate = async () => {
     const trimmed = title.trim();
@@ -50,7 +54,7 @@ export default function NewIOU() {
   return (
     <View className="flex-1 bg-cream dark:bg-bark">
       {/* Header */}
-      <View className="flex-row items-center gap-3 px-5 pt-14 pb-4 border-b border-sand dark:border-[#3D2B3D]">
+      <View className="flex-row items-center gap-3 px-5 pb-4 border-b border-sand dark:border-[#3D2B3D]" style={{ paddingTop: insets.top + 16 }}>
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <Text className="text-base text-brown-warm dark:text-umber">Cancel</Text>
         </Pressable>
@@ -131,7 +135,7 @@ export default function NewIOU() {
             value={note}
             onChangeText={setNote}
             placeholder="Add context…"
-            placeholderTextColor="#8C7676"
+            placeholderTextColor={colorScheme === "dark" ? "#9E8A9E" : "#8C7676"}
             multiline
             numberOfLines={3}
             maxLength={200}

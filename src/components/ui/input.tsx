@@ -1,4 +1,4 @@
-import { Text, TextInput, TextInputProps, View } from "react-native";
+import { Text, TextInput, TextInputProps, View, useColorScheme } from "react-native";
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -7,6 +7,7 @@ interface InputProps extends TextInputProps {
 }
 
 export function Input({ label, error, hint, style, ...props }: InputProps) {
+  const colorScheme = useColorScheme();
   return (
     <View className="gap-1.5">
       {label && (
@@ -16,7 +17,7 @@ export function Input({ label, error, hint, style, ...props }: InputProps) {
       )}
       <TextInput
         {...props}
-        placeholderTextColor="#8C7676"
+        placeholderTextColor={colorScheme === "dark" ? "#9E8A9E" : "#8C7676"}
         className={[
           "rounded-xl border px-4 py-3.5 text-base",
           "text-brown-deep dark:text-offwhite",

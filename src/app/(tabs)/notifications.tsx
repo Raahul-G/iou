@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
 import {
@@ -109,7 +110,7 @@ function NotifCard({
     >
       <Text className="text-xl mt-0.5">{icon}</Text>
       <View className="flex-1">
-        <Text className="text-sm font-semibold text-brown-deep dark:text-offwhite leading-snug">
+        <Text className="text-sm font-semibold text-brown-deep dark:text-offwhite leading-snug" numberOfLines={2}>
           {notif.title}
         </Text>
         {notif.message ? (
@@ -261,11 +262,13 @@ export default function Notifications() {
   const activity = (notifs ?? []).filter((n) => n.type !== "friend_request");
 
   const hasAnything = (requests && requests.length > 0) || activity.length > 0;
+  const insets = useSafeAreaInsets();
 
   return (
     <ScrollView
       className="flex-1 bg-cream dark:bg-bark"
-      contentContainerClassName="px-5 pt-14 pb-8 gap-6"
+      contentContainerClassName="px-5 pb-8 gap-6"
+      contentContainerStyle={{ paddingTop: insets.top + 16 }}
       refreshControl={
         <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
       }

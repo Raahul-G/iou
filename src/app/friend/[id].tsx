@@ -11,8 +11,10 @@ import {
   Text,
   TextInput,
   View,
+  useColorScheme,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthStore } from "@/store/auth.store";
 import { useIOUs, useScores, useUpdateIOUStatus, type IOU } from "@/hooks/use-ious";
 import { useSetNickname } from "@/hooks/use-friends";
@@ -170,7 +172,8 @@ export default function FriendDetail() {
 
   const { user } = useAuthStore();
   const isUserA = isUserAStr === "true";
-  const friendFirst = (name ?? "").split(" ")[0];
+  const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
 
   // ── Data ──────────────────────────────────────────────────────────
   const {
@@ -272,7 +275,8 @@ export default function FriendDetail() {
   const allIOUs     = [...activeIOUs, ...historyIOUs];
   const visibleIOUs = showAllHistory ? allIOUs : allIOUs.slice(0, 3);
 
-  const displayName  = currentNickname || name;
+  const displayName = currentNickname || name;
+  const friendFirst = (displayName ?? "").split(" ")[0];
   const wishNewParams = { friendshipId: id, targetId: friendId, friendName: displayName };
 
   return (
@@ -283,7 +287,7 @@ export default function FriendDetail() {
       showsVerticalScrollIndicator={false}
     >
       {/* ── Header ───────────────────────────────────────────────────── */}
-      <View className="px-5 pt-14 pb-6 border-b border-sand dark:border-[#3D2B3D] items-center">
+      <View className="px-5 pb-6 border-b border-sand dark:border-[#3D2B3D] items-center" style={{ paddingTop: insets.top + 16 }}>
         <Pressable onPress={() => router.back()} hitSlop={8} className="self-start mb-5">
           <Text className="text-base text-brown-warm dark:text-umber">Back</Text>
         </Pressable>
@@ -307,10 +311,10 @@ export default function FriendDetail() {
                 value={nicknameInput}
                 onChangeText={setNicknameInput}
                 placeholder="Add a nickname…"
-                placeholderTextColor="#8C7676"
+                placeholderTextColor={colorScheme === "dark" ? "#9E8A9E" : "#8C7676"}
                 maxLength={30}
                 autoFocus
-                className="text-xl font-bold text-brown-deep dark:text-offwhite bg-sand/50 dark:bg-[#3D2B3D] rounded-xl px-4 py-2 border border-sand dark:border-[#4A354A] min-w-[160px] text-center"
+                className="text-xl font-bold text-brown-deep dark:text-offwhite bg-sand/50 dark:bg-[#3D2B3D] rounded-xl px-4 py-2 border border-sand dark:border-[#4A354A] text-center"
               />
             </View>
             <View className="flex-row items-center gap-4">
@@ -344,7 +348,7 @@ export default function FriendDetail() {
       {/* Zone 1 — Tree                                               */}
       {/* ════════════════════════════════════════════════════════════ */}
       <View className="items-center px-5 py-8 gap-3">
-        <Text style={{ fontSize: 80, lineHeight: 92 }}>{treeEmoji}</Text>
+        <Text style={{ fontSize: 64, lineHeight: 76 }}>{treeEmoji}</Text>
         <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
           {treeLabel}
         </Text>
@@ -359,7 +363,7 @@ export default function FriendDetail() {
                 You {myEmoji}
               </Text>
             </View>
-            <View className="w-px bg-sand dark:bg-[#3D2B3D] my-3" />
+            <View className="bg-sand dark:bg-[#3D2B3D] my-3" style={{ width: StyleSheet.hairlineWidth }} />
             <View className="flex-1 items-center py-3 gap-0.5">
               <Text className="text-2xl font-bold text-brown-deep dark:text-offwhite">
                 {treeScore.friendScore}
@@ -372,7 +376,7 @@ export default function FriendDetail() {
         )}
       </View>
 
-      <View className="h-px bg-sand dark:bg-[#3D2B3D] mx-5" />
+      <View className="bg-sand dark:bg-[#3D2B3D] mx-5" style={{ height: StyleSheet.hairlineWidth }} />
 
       {/* ════════════════════════════════════════════════════════════ */}
       {/* Zone 2 — IOUs                                               */}
@@ -447,7 +451,7 @@ export default function FriendDetail() {
         )}
       </View>
 
-      <View className="h-px bg-sand dark:bg-[#3D2B3D] mx-5" />
+      <View className="bg-sand dark:bg-[#3D2B3D] mx-5" style={{ height: StyleSheet.hairlineWidth }} />
 
       {/* ════════════════════════════════════════════════════════════ */}
       {/* Zone 3 — Active Wish                                        */}
@@ -499,7 +503,7 @@ export default function FriendDetail() {
                   <View className="gap-2">
                     <TextInput
                       value={declineText} onChangeText={setDeclineText}
-                      placeholder="Add a note (optional)" placeholderTextColor="#9E8A9E"
+                      placeholder="Add a note (optional)" placeholderTextColor={colorScheme === "dark" ? "#9E8A9E" : "#8C7676"}
                       maxLength={140} multiline
                       className="bg-white dark:bg-bark-card border border-sand dark:border-[#3D2B3D] rounded-xl px-4 py-3 text-sm text-brown-deep dark:text-offwhite min-h-[72px]"
                     />
@@ -547,7 +551,7 @@ export default function FriendDetail() {
                     <View className="gap-2">
                       <TextInput
                         value={thankYouNote} onChangeText={setThankYouNote}
-                        placeholder="Add a thank-you note (optional)" placeholderTextColor="#9E8A9E"
+                        placeholder="Add a thank-you note (optional)" placeholderTextColor={colorScheme === "dark" ? "#9E8A9E" : "#8C7676"}
                         maxLength={280} multiline
                         className="bg-white dark:bg-bark-card border border-sand dark:border-[#3D2B3D] rounded-xl px-4 py-3 text-sm text-brown-deep dark:text-offwhite min-h-[72px]"
                       />

@@ -9,7 +9,9 @@ import {
   Switch,
   Text,
   View,
+  useColorScheme,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
 import { useUpdateProfile, useUploadAvatar } from "@/hooks/use-profile";
@@ -85,11 +87,14 @@ export default function Settings() {
 
   const theme = (profile?.theme_preference ?? "system") as ThemeOption;
   const notifsEnabled = profile?.notifications_enabled ?? true;
+  const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <ScrollView
       className="flex-1 bg-cream dark:bg-bark"
-      contentContainerClassName="px-5 pt-14 pb-8 gap-6"
+      contentContainerClassName="px-5 pb-8 gap-6"
+      contentContainerStyle={{ paddingTop: insets.top + 16 }}
       showsVerticalScrollIndicator={false}
     >
       <Text className="text-2xl font-semibold text-brown-deep dark:text-offwhite">
@@ -190,7 +195,10 @@ export default function Settings() {
         <Switch
           value={notifsEnabled}
           onValueChange={handleNotifToggle}
-          trackColor={{ true: "#D4A5A5" }}
+          trackColor={{
+            false: colorScheme === "dark" ? "#4A354A" : "#E5D5C5",
+            true: colorScheme === "dark" ? "#9E7E8A" : "#D4A5A5",
+          }}
           thumbColor="#fff"
         />
       </View>

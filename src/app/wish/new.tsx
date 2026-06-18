@@ -5,8 +5,10 @@ import {
   Text,
   TextInput,
   View,
+  useColorScheme,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCreateWish } from "@/hooks/use-wishes";
 import { Button } from "@/components/ui/button";
 import { WISH_MOODS } from "@/constants/app";
@@ -22,6 +24,8 @@ export default function NewWish() {
   const [text, setText] = useState("");
   const [mood, setMood] = useState(WISH_MOODS[0].key);
   const [error, setError] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
 
   const handleCreate = async () => {
     const trimmed = text.trim();
@@ -42,7 +46,7 @@ export default function NewWish() {
   return (
     <View className="flex-1 bg-cream dark:bg-bark">
       {/* Header */}
-      <View className="flex-row items-center gap-3 px-5 pt-14 pb-4 border-b border-sand dark:border-[#3D2B3D]">
+      <View className="flex-row items-center gap-3 px-5 pb-4 border-b border-sand dark:border-[#3D2B3D]" style={{ paddingTop: insets.top + 16 }}>
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <Text className="text-base text-brown-warm dark:text-umber">Cancel</Text>
         </Pressable>
@@ -70,7 +74,7 @@ export default function NewWish() {
             value={text}
             onChangeText={setText}
             placeholder="What do you wish for?"
-            placeholderTextColor="#9E8A9E"
+            placeholderTextColor={colorScheme === "dark" ? "#9E8A9E" : "#8C7676"}
             maxLength={300}
             multiline
             autoFocus

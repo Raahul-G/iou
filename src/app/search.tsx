@@ -7,6 +7,7 @@ import {
   View,
 } from "react-native";
 import { router } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
 import { useFriends, useSendFriendRequest } from "@/hooks/use-friends";
@@ -21,6 +22,7 @@ type FoundUser = {
 
 export default function SearchScreen() {
   const { user } = useAuthStore();
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState("");
   const [searching, setSearching] = useState(false);
   const [result, setResult] = useState<FoundUser | null | "not-found">(null);
@@ -86,7 +88,7 @@ export default function SearchScreen() {
   return (
     <View className="flex-1 bg-cream dark:bg-bark">
       {/* Header */}
-      <View className="flex-row items-center gap-3 px-5 pt-14 pb-4 border-b border-sand dark:border-[#3D2B3D]">
+      <View className="flex-row items-center gap-3 px-5 pb-4 border-b border-sand dark:border-[#3D2B3D]" style={{ paddingTop: insets.top + 16 }}>
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <Text className="text-base text-brown-warm dark:text-umber">Back</Text>
         </Pressable>
