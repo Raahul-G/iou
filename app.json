@@ -13,7 +13,7 @@
     },
     "android": {
       "package": "com.fridayvision.iou",
-      "versionCode": 8,
+      "versionCode": 9,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/app-icon.png",
         "backgroundColor": "#fff1e4"

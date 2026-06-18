@@ -28,10 +28,10 @@ const LAST_ACTIVITY_KEY = "iou_last_activity";
 
 SplashScreen.preventAutoHideAsync();
 
-// Module-level dedup — shared across all AuthGuard instances so duplicate
-// Linking events (Android fires the URL intent more than once) only trigger
-// one exchangeCodeForSession call even if multiple listeners are registered.
-let _lastHandledOAuthUrl: string | null = null;
+// Module-level flag — prevents concurrent or duplicate exchangeCodeForSession
+// calls across multiple Linking events or listener registrations. Resets after
+// every exchange (success or failure) so retries always work cleanly.
+let isExchangingCode = false;
 
 function AuthGuard() {
   const router = useRouter();
@@ -64,30 +64,47 @@ function AuthGuard() {
     };
   }, []);
 
-  // Handle OAuth deep-link callbacks. This is the single source of truth for
-  // code exchange on Android — openAuthSessionAsync's result.url is unreliable
-  // (returns base URL without the code on some devices). The Linking event
-  // always carries the full URL. Module-level dedup prevents double-exchange
-  // even when Android fires the URL intent twice or two listeners are registered.
+  // Handle OAuth deep-link callbacks — single source of truth for code exchange.
+  // Two fixes combined:
+  // 1. isExchangingCode flag (resets after every attempt) handles duplicate Linking
+  //    events and Android zombie-activity retries that poison the exchange state.
+  // 2. String-split code extraction bypasses URL.searchParams, which is unreliable
+  //    for custom-scheme URLs (iou:///) even with react-native-url-polyfill.
   useEffect(() => {
     const handleUrl = async ({ url }: { url: string }) => {
       if (!url.includes("code=") && !url.includes("access_token")) return;
-      if (url === _lastHandledOAuthUrl) return;
-      _lastHandledOAuthUrl = url;
+      if (isExchangingCode) return;
+      isExchangingCode = true;
+
+      // Extract the raw code value — do NOT use new URL() or searchParams here.
+      const code = url.split("code=")[1]?.split("&")[0] ?? null;
 
       trackOAuthRedirect(url);
+
       try {
-        const { error } = await supabase.auth.exchangeCodeForSession(url);
+        if (!code) {
+          captureError(new Error("OAuth: no code in redirect URL"), {
+            flow: "oauth_deep_link",
+            url,
+          });
+          return;
+        }
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) captureError(error, { flow: "oauth_deep_link" });
       } catch (err) {
         captureError(err instanceof Error ? err : new Error(String(err)), {
           flow: "oauth_deep_link",
         });
+      } finally {
+        isExchangingCode = false;
       }
     };
 
     const sub = Linking.addEventListener("url", handleUrl);
-    return () => sub.remove();
+    return () => {
+      sub.remove();
+      isExchangingCode = false;
+    };
   }, []);
 
   // Listen for Supabase auth state changes — handles login, logout, and auto-login on restart
