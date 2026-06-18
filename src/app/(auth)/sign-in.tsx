@@ -83,12 +83,11 @@ export default function SignIn() {
         redirectUrl
       );
 
-      if (result.type === "success" && result.url) {
-        const { error } = await supabase.auth.exchangeCodeForSession(
-          result.url
-        );
-        if (error) throw error;
-      } else if (result.type !== "success") {
+      // Code exchange is handled by the Linking listener in _layout.tsx —
+      // openAuthSessionAsync's result.url is unreliable on Android (returns
+      // the base URL without ?code= on some devices). The Linking event
+      // always carries the full URL and is the single exchange point.
+      if (result.type === "cancel" || result.type === "dismiss") {
         captureError(new Error(`OAuth browser closed: ${result.type}`), {
           flow: "google_sign_in",
           result_type: result.type,

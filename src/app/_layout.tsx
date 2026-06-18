@@ -13,7 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/query-client";
 import { useAuthStore } from "@/store/auth.store";
 import { applyTheme } from "@/lib/theme";
-import { identifyUser, clearUser, trackOAuthRedirect } from "@/lib/analytics";
+import { identifyUser, clearUser, trackOAuthRedirect, captureError } from "@/lib/analytics";
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -27,6 +27,11 @@ const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
 const LAST_ACTIVITY_KEY = "iou_last_activity";
 
 SplashScreen.preventAutoHideAsync();
+
+// Module-level dedup — shared across all AuthGuard instances so duplicate
+// Linking events (Android fires the URL intent more than once) only trigger
+// one exchangeCodeForSession call even if multiple listeners are registered.
+let _lastHandledOAuthUrl: string | null = null;
 
 function AuthGuard() {
   const router = useRouter();
@@ -59,14 +64,25 @@ function AuthGuard() {
     };
   }, []);
 
-  // Log OAuth deep-link callbacks for debugging.
-  // NOTE: do NOT call exchangeCodeForSession here — sign-in.tsx handles code exchange
-  // via openAuthSessionAsync result. Calling it here too causes a double-exchange that
-  // consumes the PKCE code_verifier on the first call, leaving nothing for the second.
+  // Handle OAuth deep-link callbacks. This is the single source of truth for
+  // code exchange on Android — openAuthSessionAsync's result.url is unreliable
+  // (returns base URL without the code on some devices). The Linking event
+  // always carries the full URL. Module-level dedup prevents double-exchange
+  // even when Android fires the URL intent twice or two listeners are registered.
   useEffect(() => {
-    const handleUrl = ({ url }: { url: string }) => {
-      if (url.includes("code=") || url.includes("access_token")) {
-        trackOAuthRedirect(url);
+    const handleUrl = async ({ url }: { url: string }) => {
+      if (!url.includes("code=") && !url.includes("access_token")) return;
+      if (url === _lastHandledOAuthUrl) return;
+      _lastHandledOAuthUrl = url;
+
+      trackOAuthRedirect(url);
+      try {
+        const { error } = await supabase.auth.exchangeCodeForSession(url);
+        if (error) captureError(error, { flow: "oauth_deep_link" });
+      } catch (err) {
+        captureError(err instanceof Error ? err : new Error(String(err)), {
+          flow: "oauth_deep_link",
+        });
       }
     };
 
