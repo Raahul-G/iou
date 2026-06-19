@@ -15,6 +15,8 @@ import { useAuthStore } from "@/store/auth.store";
 import { applyTheme } from "@/lib/theme";
 import { identifyUser, clearUser, trackOAuthRedirect, captureError } from "@/lib/analytics";
 
+const OAUTH_EXCHANGE_TIMEOUT_MS = 15_000;
+
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   environment: __DEV__ ? "development" : "production",
@@ -28,16 +30,21 @@ const LAST_ACTIVITY_KEY = "iou_last_activity";
 
 SplashScreen.preventAutoHideAsync();
 
-// Module-level flag — prevents concurrent or duplicate exchangeCodeForSession
-// calls across multiple Linking events or listener registrations. Resets after
-// every exchange (success or failure) so retries always work cleanly.
-let isExchangingCode = false;
+// Module-level Set of already-handled OAuth codes.
+// Using a Set (vs a boolean flag) means a code is skipped even if a zombie
+// BrowserProxyActivity re-fires the Linking event after the first exchange
+// completes and the flag would have reset. Codes are one-time-use so the
+// Set stays tiny (≤1 entry per OAuth attempt).
+const handledOAuthCodes = new Set<string>();
 
 function AuthGuard() {
   const router = useRouter();
   const segments = useSegments();
-  const { session, isLoading, setSession, setLoading, setProfile, reset } =
-    useAuthStore();
+  const {
+    session, isLoading,
+    setSession, setLoading, setProfile, reset,
+    setOAuthError, setExchangingOAuth,
+  } = useAuthStore();
 
   // Web only: check inactivity on hard refresh, track activity while active
   useEffect(() => {
@@ -65,45 +72,80 @@ function AuthGuard() {
   }, []);
 
   // Handle OAuth deep-link callbacks — single source of truth for code exchange.
-  // Two fixes combined:
-  // 1. isExchangingCode flag (resets after every attempt) handles duplicate Linking
-  //    events and Android zombie-activity retries that poison the exchange state.
-  // 2. String-split code extraction bypasses URL.searchParams, which is unreliable
-  //    for custom-scheme URLs (iou:///) even with react-native-url-polyfill.
+  //
+  // Robustness measures:
+  // 1. Scheme validation — only process iou:// deep links, not arbitrary URLs.
+  // 2. Code-level dedup via Set — a code that has already been handled is skipped
+  //    even after the exchange completes, preventing zombie BrowserProxyActivity
+  //    re-fires from triggering a second exchange with an already-expired code.
+  // 3. URL-decode — codes with encoded characters (e.g. %3D) are decoded before
+  //    being sent to Supabase, which expects the raw value.
+  // 4. 15-second timeout — if Supabase's token-refresh lock stalls the exchange,
+  //    we reject after 15 s so the app never freezes permanently.
+  // 5. Session validation — confirms a session was actually created, not just that
+  //    no error object was returned.
+  // 6. UI feedback — sets isExchangingOAuth in the store so sign-in.tsx can keep
+  //    the Google button disabled and surface exchange errors to the user.
   useEffect(() => {
     const handleUrl = async ({ url }: { url: string }) => {
+      // Fix 6: scheme validation — ignore deep links that aren't ours
+      if (!url.startsWith("iou://")) return;
       if (!url.includes("code=") && !url.includes("access_token")) return;
-      if (isExchangingCode) return;
-      isExchangingCode = true;
 
-      // Extract the raw code value — do NOT use new URL() or searchParams here.
-      const code = url.split("code=")[1]?.split("&")[0] ?? null;
+      // Fix 5: URL-decode before extracting — do NOT use new URL() or searchParams
+      // (unreliable for custom-scheme URLs even with react-native-url-polyfill)
+      const rawSegment = url.split("code=")[1]?.split("&")[0] ?? "";
+      const code = decodeURIComponent(rawSegment) || null;
+
+      // Fix 2: code-level dedup — skip if this exact code was already handled
+      if (!code || handledOAuthCodes.has(code)) return;
+      handledOAuthCodes.add(code);
 
       trackOAuthRedirect(url);
+      setExchangingOAuth(true);
+      setOAuthError(null);
 
       try {
-        if (!code) {
-          captureError(new Error("OAuth: no code in redirect URL"), {
-            flow: "oauth_deep_link",
-            url,
-          });
+        // Fix 4: 15-second timeout so a stalled Supabase exchange never freezes the app
+        const { data, error } = await Promise.race([
+          supabase.auth.exchangeCodeForSession(code),
+          new Promise<never>((_, reject) =>
+            setTimeout(
+              () => reject(new Error("OAuth exchange timed out. Please try again.")),
+              OAUTH_EXCHANGE_TIMEOUT_MS
+            )
+          ),
+        ]);
+
+        if (error) {
+          captureError(error, { flow: "oauth_deep_link" });
+          setOAuthError("Google sign-in failed. Please try again.");
           return;
         }
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) captureError(error, { flow: "oauth_deep_link" });
+
+        // Fix 8: verify a session was actually established, not just error=null
+        if (!data?.session) {
+          captureError(new Error("OAuth: exchange returned no session"), {
+            flow: "oauth_deep_link",
+          });
+          setOAuthError("Google sign-in failed. Please try again.");
+        }
       } catch (err) {
-        captureError(err instanceof Error ? err : new Error(String(err)), {
+        const message = err instanceof Error ? err.message : "Google sign-in failed. Please try again.";
+        captureError(err instanceof Error ? err : new Error(message), {
           flow: "oauth_deep_link",
         });
+        setOAuthError(message);
       } finally {
-        isExchangingCode = false;
+        setExchangingOAuth(false);
       }
     };
 
     const sub = Linking.addEventListener("url", handleUrl);
     return () => {
       sub.remove();
-      isExchangingCode = false;
+      // Clear in-progress flag so a fresh listener registration starts cleanly
+      setExchangingOAuth(false);
     };
   }, []);
 
@@ -139,8 +181,11 @@ function AuthGuard() {
                   );
                 }
               },
-              () => {
+              (err) => {
                 // Non-critical: app is usable without profile. Theme stays default.
+                captureError(err instanceof Error ? err : new Error(String(err)), {
+                  flow: "profile_fetch",
+                });
               }
             );
         } else {

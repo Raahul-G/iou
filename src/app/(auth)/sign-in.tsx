@@ -13,6 +13,7 @@ import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { supabase } from "@/lib/supabase";
 import { captureError } from "@/lib/analytics";
+import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Divider } from "@/components/ui/divider";
@@ -25,6 +26,11 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // oauthError: set by _layout.tsx deep-link handler if exchange fails
+  // isExchangingOAuth: true from the moment the browser closes until exchange settles
+  // Both surface to the user here so the Google button stays locked and errors are visible
+  const { oauthError, isExchangingOAuth, setOAuthError } = useAuthStore();
 
   const handleSignIn = async () => {
     if (!email.trim() || !password) {
@@ -49,6 +55,7 @@ export default function SignIn() {
 
   const handleGoogleSignIn = async () => {
     setError(null);
+    setOAuthError(null);
     setGoogleLoading(true);
 
     try {
@@ -132,10 +139,10 @@ export default function SignIn() {
         </View>
 
         <View className="gap-4">
-          {error && (
+          {(error || oauthError) && (
             <View className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-950">
               <Text className="text-sm text-red-600 dark:text-red-400">
-                {error}
+                {error ?? oauthError}
               </Text>
             </View>
           )}
@@ -169,10 +176,11 @@ export default function SignIn() {
           <Divider />
 
           <Button
-            label="Continue with Google"
+            label={isExchangingOAuth ? "Signing in…" : "Continue with Google"}
             onPress={handleGoogleSignIn}
             variant="secondary"
-            loading={googleLoading}
+            loading={googleLoading || isExchangingOAuth}
+            disabled={isExchangingOAuth}
           />
         </View>
 
