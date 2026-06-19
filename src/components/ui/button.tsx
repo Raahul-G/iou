@@ -42,6 +42,9 @@ export function Button({
       onPress={onPress}
       disabled={isDisabled}
       className={`${base} ${styles[variant]} ${isDisabled ? "opacity-50" : ""} ${className}`}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
     >
       {loading ? (
         <ActivityIndicator

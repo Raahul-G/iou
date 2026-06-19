@@ -191,6 +191,8 @@ export default function SignIn() {
           <Pressable
             onPress={() => router.push("/(auth)/sign-up")}
             hitSlop={8}
+            accessibilityRole="link"
+            accessibilityLabel="Sign up for a new account"
           >
             <Text className="text-sm font-medium text-brown-warm dark:text-umber">
               Sign up

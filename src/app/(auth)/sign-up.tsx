@@ -50,8 +50,7 @@ export default function SignUp() {
       // Pre-check: if the email is already registered, stop early.
       // supabase.auth.signUp() silently succeeds for existing emails (enumeration
       // protection), which leaves the user stuck on the OTP screen with no code.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: existing } = await (supabase.rpc as any)(
+      const { data: existing } = await supabase.rpc(
         "find_user_by_email",
         { search_email: trimmedEmail }
       );
@@ -158,7 +157,7 @@ export default function SignUp() {
           <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
             Already have an account?
           </Text>
-          <Pressable onPress={() => router.back()} hitSlop={8}>
+          <Pressable onPress={() => router.back()} hitSlop={8} accessibilityRole="link" accessibilityLabel="Sign in to existing account">
             <Text className="text-sm font-medium text-brown-warm dark:text-umber">
               Sign in
             </Text>

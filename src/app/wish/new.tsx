@@ -60,6 +60,7 @@ export default function NewWish() {
         contentContainerClassName="px-5 py-6 gap-6"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        keyboardDismissMode="on-drag"
       >
         {error && (
           <Text className="text-sm text-red-500 dark:text-red-400">{error}</Text>

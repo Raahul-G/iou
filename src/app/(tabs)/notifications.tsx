@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
+import { debouncedPush } from "@/lib/navigation";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
@@ -23,6 +24,7 @@ import {
   type AppNotification,
 } from "@/hooks/use-notifications";
 import { NOTIF_ICONS } from "@/constants/app";
+import { captureError } from "@/lib/analytics";
 
 function RequestCard({
   request,
@@ -145,14 +147,16 @@ export default function Notifications() {
   const respond = useRespondToRequest();
   const markAllRead = useMarkAllRead();
 
-  // Mark all as read when the tab gains focus — skip if a request is already in flight.
+  // Mark all as read when the tab gains focus — skip if loading, errored, or already in flight.
   useFocusEffect(
     useCallback(() => {
-      if (!markAllRead.isPending) {
-        markAllRead.mutate();
+      if (!notifLoading && !notifError && !markAllRead.isPending) {
+        markAllRead.mutate(undefined, {
+          onError: (err) => captureError(err instanceof Error ? err : new Error(String(err)), { flow: "mark_all_read" }),
+        });
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [notifLoading, notifError])
   );
 
   const handleRespond = async (requestId: string, accept: boolean) => {
@@ -175,9 +179,9 @@ export default function Notifications() {
         .eq("id", notif.related_friendship_id)
         .single();
 
-      if (!data) return;
+      if (!data || !user) return;
 
-      const myId = user!.id;
+      const myId = user.id;
       const isUserA = myId === data.user_a_id;
       const friendId = isUserA ? data.user_b_id : data.user_a_id;
       const friendProfile = (isUserA ? data.user_b : data.user_a) as {
@@ -186,7 +190,7 @@ export default function Notifications() {
       };
       const nickname = isUserA ? data.user_a_nickname : data.user_b_nickname;
 
-      router.push({
+      debouncedPush({
         pathname: "/friend/[id]",
         params: {
           id: notif.related_friendship_id,
@@ -216,9 +220,9 @@ export default function Notifications() {
         .eq("id", notif.related_iou_id)
         .single();
 
-      if (!data) return;
+      if (!data || !user) return;
 
-      const myId = user!.id;
+      const myId = user.id;
       const iAmCreator = data.creator_id === myId;
       const friendId = iAmCreator ? data.receiver_id : data.creator_id;
       const friendProfile = (iAmCreator ? data.receiver : data.creator) as {
@@ -233,7 +237,7 @@ export default function Notifications() {
       const isUserA = myId === fs.user_a_id;
       const nickname = isUserA ? fs.user_a_nickname : fs.user_b_nickname;
 
-      router.push({
+      debouncedPush({
         pathname: "/friend/[id]",
         params: {
           id: data.friendship_id,
@@ -246,7 +250,7 @@ export default function Notifications() {
       });
     } else {
       // friend_request_accepted or other — go home to see updated friends list
-      router.push("/");
+      debouncedPush("/");
     }
   };
 
@@ -273,6 +277,7 @@ export default function Notifications() {
         <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
       }
       showsVerticalScrollIndicator={false}
+      keyboardDismissMode="on-drag"
     >
       <Text className="text-2xl font-semibold text-brown-deep dark:text-offwhite">
         Notifications

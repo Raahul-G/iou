@@ -461,6 +461,10 @@ export type Database = {
             }
             Returns: undefined
           }
+      delete_own_account: {
+        Args: Record<string, never>
+        Returns: undefined
+      }
       find_user_by_email: {
         Args: { search_email: string }
         Returns: {

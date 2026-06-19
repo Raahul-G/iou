@@ -1,19 +1,22 @@
 import "../global.css";
 import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
+import { type ErrorBoundaryProps } from "expo-router";
 import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import * as Linking from "expo-linking";
 import * as Sentry from "@sentry/react-native";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Platform, useColorScheme } from "react-native";
+import { Platform, Pressable, Text, View, useColorScheme } from "react-native";
 import { useFonts, DancingScript_600SemiBold } from "@expo-google-fonts/dancing-script";
 import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/query-client";
 import { useAuthStore } from "@/store/auth.store";
 import { applyTheme } from "@/lib/theme";
 import { identifyUser, clearUser, trackOAuthRedirect, captureError } from "@/lib/analytics";
+import { OfflineBanner } from "@/components/ui/offline-banner";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
 
 const OAUTH_EXCHANGE_TIMEOUT_MS = 15_000;
 
@@ -24,6 +27,37 @@ Sentry.init({
   enableAutoSessionTracking: true,
   attachStacktrace: true,
 });
+
+if (!process.env.EXPO_PUBLIC_SENTRY_DSN) {
+  if (__DEV__) {
+    console.error(
+      "[IOU] EXPO_PUBLIC_SENTRY_DSN is not set. Crashes will not be reported."
+    );
+  } else {
+    // In production, log to console — Sentry itself can't receive this since DSN is missing
+    console.error("[IOU] Missing EXPO_PUBLIC_SENTRY_DSN — production errors are untracked.");
+  }
+}
+
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  return (
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: "#fff1e4" }}>
+      <Text style={{ fontSize: 48, marginBottom: 16 }}>😕</Text>
+      <Text style={{ fontSize: 20, fontWeight: "700", color: "#3D2E2E", marginBottom: 8, textAlign: "center" }}>
+        Something went wrong
+      </Text>
+      <Text style={{ fontSize: 14, color: "#7a5f5f", textAlign: "center", marginBottom: 24, lineHeight: 20 }}>
+        {error.message}
+      </Text>
+      <Pressable
+        onPress={retry}
+        style={{ backgroundColor: "#D4A5A5", paddingHorizontal: 24, paddingVertical: 12, borderRadius: 999 }}
+      >
+        <Text style={{ color: "#fff", fontWeight: "600", fontSize: 15 }}>Try again</Text>
+      </Pressable>
+    </View>
+  );
+}
 
 const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
 const LAST_ACTIVITY_KEY = "iou_last_activity";
@@ -100,6 +134,11 @@ function AuthGuard() {
       // Fix 2: code-level dedup — skip if this exact code was already handled
       if (!code || handledOAuthCodes.has(code)) return;
       handledOAuthCodes.add(code);
+      // Cap at 10 entries to prevent unbounded growth
+      if (handledOAuthCodes.size > 10) {
+        const oldest = handledOAuthCodes.values().next().value;
+        handledOAuthCodes.delete(oldest!);
+      }
 
       trackOAuthRedirect(url);
       setExchangingOAuth(true);
@@ -191,6 +230,7 @@ function AuthGuard() {
         } else {
           clearUser();
           reset();
+          queryClient.clear();
           // Auth screens always show in light mode — reset any previous user's theme override
           applyTheme("light");
           // Clear inactivity timestamp so the next login starts fresh
@@ -205,6 +245,9 @@ function AuthGuard() {
 
     return () => listener.subscription.unsubscribe();
   }, []);
+
+  // Push notifications — register token when user is authenticated
+  usePushNotifications();
 
   // Route guard
   useEffect(() => {
@@ -245,6 +288,7 @@ export default function RootLayout() {
         <meta name="theme-color" content="#fff1e4" />
       </Head>
       <AuthGuard />
+      <OfflineBanner />
       <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }} />
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
     </QueryClientProvider>

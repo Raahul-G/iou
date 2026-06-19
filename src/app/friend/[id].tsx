@@ -16,6 +16,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthStore } from "@/store/auth.store";
+import { debouncedPush } from "@/lib/navigation";
 import { useIOUs, useScores, useUpdateIOUStatus, type IOU } from "@/hooks/use-ious";
 import { useSetNickname } from "@/hooks/use-friends";
 import { useFriendTree, friendTreeVisual } from "@/hooks/use-friend-tree";
@@ -175,6 +176,12 @@ export default function FriendDetail() {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
 
+  // Guard against missing route params or unauthenticated state
+  if (!id || !friendId || !user) {
+    router.replace("/");
+    return null;
+  }
+
   // ── Data ──────────────────────────────────────────────────────────
   const {
     data: ious,
@@ -186,7 +193,7 @@ export default function FriendDetail() {
   const { data: scores } = useScores(id);
   const { data: treeScore, isLoading: treeLoading } = useFriendTree({
     friendshipId: id,
-    myId: user!.id,
+    myId: user.id,
     friendId,
     isUserA,
   });
@@ -210,6 +217,7 @@ export default function FriendDetail() {
   const [showThankYouInput, setShowThankYouInput] = useState(false);
   const [thankYouNote, setThankYouNote] = useState("");
   const [showAllHistory, setShowAllHistory] = useState(false);
+  const [iouPageLimit, setIouPageLimit] = useState(20);
 
   // ── Tree visual ───────────────────────────────────────────────────
   const isNew = scores?.all_time === 0;
@@ -224,18 +232,18 @@ export default function FriendDetail() {
   const amCreator = !!activeWish && activeWish.creator_id === user?.id;
   const amTarget  = !!activeWish && activeWish.target_id  === user?.id;
 
-  const mutateWish = async (action: Parameters<typeof updateWish.mutateAsync>[0]) => {
+  const mutateWish = async (action: Parameters<typeof updateWish.mutateAsync>[0]): Promise<boolean> => {
     setWishActionError(null);
-    try { await updateWish.mutateAsync(action); }
-    catch (err: unknown) { setWishActionError(err instanceof Error ? err.message : "Something went wrong."); }
+    try { await updateWish.mutateAsync(action); return true; }
+    catch (err: unknown) { setWishActionError(err instanceof Error ? err.message : "Something went wrong."); return false; }
   };
 
   const handleWishAccept      = () => mutateWish({ wishId: activeWish!.id, friendshipId: id, action: "accept" });
   const handleWishMarkDone    = () => mutateWish({ wishId: activeWish!.id, friendshipId: id, action: "mark_done" });
   const handleWishNotRightNow = async () => {
     if (!showDeclineInput) { setShowDeclineInput(true); return; }
-    await mutateWish({ wishId: activeWish!.id, friendshipId: id, action: "not_right_now", decline_text: declineText.trim() || undefined });
-    setShowDeclineInput(false); setDeclineText("");
+    const ok = await mutateWish({ wishId: activeWish!.id, friendshipId: id, action: "not_right_now", decline_text: declineText.trim() || undefined });
+    if (ok) { setShowDeclineInput(false); setDeclineText(""); }
   };
   const handleWishWithdraw = () => {
     const go = () => mutateWish({ wishId: activeWish!.id, friendshipId: id, action: "withdraw" });
@@ -247,8 +255,8 @@ export default function FriendDetail() {
   };
   const handleWishConfirm = async () => {
     if (!showThankYouInput) { setShowThankYouInput(true); return; }
-    await mutateWish({ wishId: activeWish!.id, friendshipId: id, action: "confirm", thank_you_note: thankYouNote.trim() || undefined });
-    setShowThankYouInput(false); setThankYouNote("");
+    const ok = await mutateWish({ wishId: activeWish!.id, friendshipId: id, action: "confirm", thank_you_note: thankYouNote.trim() || undefined });
+    if (ok) { setShowThankYouInput(false); setThankYouNote(""); }
   };
 
   // ── IOU helpers ───────────────────────────────────────────────────
@@ -273,7 +281,7 @@ export default function FriendDetail() {
   const activeIOUs  = (ious ?? []).filter((i) => !["completed", "declined"].includes(i.status));
   const historyIOUs = (ious ?? []).filter((i) => ["completed", "declined"].includes(i.status));
   const allIOUs     = [...activeIOUs, ...historyIOUs];
-  const visibleIOUs = showAllHistory ? allIOUs : allIOUs.slice(0, 3);
+  const visibleIOUs = showAllHistory ? allIOUs.slice(0, iouPageLimit) : allIOUs.slice(0, 3);
 
   const displayName = currentNickname || name;
   const friendFirst = (displayName ?? "").split(" ")[0];
@@ -285,10 +293,11 @@ export default function FriendDetail() {
       contentContainerClassName="pb-10"
       refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetchIOUs} />}
       showsVerticalScrollIndicator={false}
+      keyboardDismissMode="on-drag"
     >
       {/* ── Header ───────────────────────────────────────────────────── */}
       <View className="px-5 pb-6 border-b border-sand dark:border-[#3D2B3D] items-center" style={{ paddingTop: insets.top + 16 }}>
-        <Pressable onPress={() => router.back()} hitSlop={8} className="self-start mb-5">
+        <Pressable onPress={() => router.back()} hitSlop={8} className="self-start mb-5" accessibilityRole="button" accessibilityLabel="Go back">
           <Text className="text-base text-brown-warm dark:text-umber">Back</Text>
         </Pressable>
 
@@ -337,6 +346,8 @@ export default function FriendDetail() {
             onPress={() => { setNicknameInput(currentNickname ?? ""); setNicknameEditing(true); }}
             hitSlop={8}
             className="flex-row items-center"
+            accessibilityRole="button"
+            accessibilityLabel={`Edit nickname for ${displayName}`}
           >
             <Text className="text-2xl font-bold text-brown-deep dark:text-offwhite">{displayName}</Text>
             <Text className="text-lg ml-3 opacity-50">✏️</Text>
@@ -388,8 +399,10 @@ export default function FriendDetail() {
 
         {/* Action pill */}
         <Pressable
-          onPress={() => router.push({ pathname: "/iou/new", params: { friendshipId: id, friendId, friendName: displayName } })}
+          onPress={() => debouncedPush({ pathname: "/iou/new", params: { friendshipId: id, friendId, friendName: displayName } })}
           className="items-center justify-center bg-brown-warm dark:bg-umber rounded-2xl py-3 active:opacity-75"
+          accessibilityRole="button"
+          accessibilityLabel="New IOU"
         >
           <Text className="text-white text-sm font-semibold">+ New IOU</Text>
         </Pressable>
@@ -437,13 +450,27 @@ export default function FriendDetail() {
           <>
             <View className="gap-3">
               {visibleIOUs.map((iou) => (
-                <IOURow key={iou.id} iou={iou} myId={user!.id} onAction={handleIOUAction} />
+                <IOURow key={iou.id} iou={iou} myId={user.id} onAction={handleIOUAction} />
               ))}
             </View>
-            {allIOUs.length > 3 && (
-              <Pressable onPress={() => setShowAllHistory((v) => !v)} className="items-center py-2">
+            {allIOUs.length > 3 && !showAllHistory && (
+              <Pressable onPress={() => { setShowAllHistory(true); setIouPageLimit(20); }} className="items-center py-2">
                 <Text className="text-sm text-brown-warm dark:text-umber font-medium">
-                  {showAllHistory ? "Show less" : `View all ${allIOUs.length} IOUs →`}
+                  {`View all ${allIOUs.length} IOUs →`}
+                </Text>
+              </Pressable>
+            )}
+            {showAllHistory && iouPageLimit < allIOUs.length && (
+              <Pressable onPress={() => setIouPageLimit((v) => v + 20)} className="items-center py-2">
+                <Text className="text-sm text-brown-warm dark:text-umber font-medium">
+                  Show more ({allIOUs.length - iouPageLimit} remaining)
+                </Text>
+              </Pressable>
+            )}
+            {showAllHistory && (
+              <Pressable onPress={() => { setShowAllHistory(false); setIouPageLimit(20); }} className="items-center py-2">
+                <Text className="text-sm text-brown-warm dark:text-umber font-medium">
+                  Show less
                 </Text>
               </Pressable>
             )}
@@ -591,9 +618,11 @@ export default function FriendDetail() {
               No active wish. Make one for {friendFirst} to grant.
             </Text>
             <Pressable
-              onPress={() => router.push({ pathname: "/wish/new", params: wishNewParams })}
+              onPress={() => debouncedPush({ pathname: "/wish/new", params: wishNewParams })}
               className="rounded-2xl px-6 py-3 bg-brown-warm dark:bg-umber active:opacity-75"
               style={styles.wishGlow}
+              accessibilityRole="button"
+              accessibilityLabel="Plant a wish"
             >
               <Text className="text-sm font-semibold text-white">Plant a wish ✨</Text>
             </Pressable>

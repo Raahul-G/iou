@@ -68,6 +68,7 @@ export default function NewIOU() {
         contentContainerClassName="px-5 py-6 gap-6"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        keyboardDismissMode="on-drag"
       >
         {/* Who owes who */}
         <View className="rounded-xl bg-sand/50 dark:bg-bark-card px-4 py-3">

@@ -93,9 +93,11 @@ export function useCreateWish() {
       text: string;
       mood: string;
     }) => {
+      const userId = user?.id;
+      if (!userId) throw new Error("Not authenticated");
       const { error } = await supabase.from("wishes").insert({
         friendship_id: payload.friendshipId,
-        creator_id: user!.id,
+        creator_id: userId,
         target_id: payload.targetId,
         text: payload.text,
         mood: payload.mood,

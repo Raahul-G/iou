@@ -61,32 +61,42 @@ export default function CreateProfile() {
 
     const path = `${user.id}/avatar.jpg`;
 
-    // Delete any existing avatar first
-    const { data: existing } = await supabase.storage
-      .from("avatars")
-      .list(user.id);
-    if (existing && existing.length > 0) {
-      await supabase.storage
-        .from("avatars")
-        .remove(existing.map((f) => `${user.id}/${f.name}`));
-    }
-
     // base64 → Uint8Array — works on web and native
-    const binary = atob(asset.base64);
+    let binary: string;
+    try {
+      binary = atob(asset.base64);
+    } catch {
+      throw new Error("Image could not be processed. Please try a different photo.");
+    }
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
+    // Upload first (upsert: true) — old avatar is preserved if this fails
     const { error } = await supabase.storage
       .from("avatars")
       .upload(path, bytes, { contentType: "image/jpeg", upsert: true });
 
     if (error) throw error;
 
+    // Clean up stale files after successful upload
+    const { data: existing } = await supabase.storage
+      .from("avatars")
+      .list(user.id);
+    if (existing && existing.length > 0) {
+      const stale = existing.filter((f) => f.name !== "avatar.jpg");
+      if (stale.length > 0) {
+        await supabase.storage
+          .from("avatars")
+          .remove(stale.map((f) => `${user.id}/${f.name}`));
+      }
+    }
+
     const { data } = supabase.storage.from("avatars").getPublicUrl(path);
     return `${data.publicUrl}?t=${Date.now()}`;
   };
 
   const handleSave = async () => {
+    if (!user) return;
     const name = displayName.trim();
 
     if (!name) {
@@ -120,7 +130,7 @@ export default function CreateProfile() {
           display_name: name,
           profile_pic_url: profilePicUrl,
         })
-        .eq("id", user!.id)
+        .eq("id", user.id)
         .select()
         .single();
 

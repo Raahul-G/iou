@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
 import { useUpdateProfile, useUploadAvatar } from "@/hooks/use-profile";
+import { queryClient } from "@/lib/query-client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -25,6 +26,7 @@ export default function Settings() {
 
   const [displayName, setDisplayName] = useState(profile?.display_name ?? "");
   const [nameError, setNameError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Profile loads async after mount (background fetch in _layout.tsx).
   // Sync the input field when it arrives so it isn't blank on hard refresh.
@@ -67,11 +69,42 @@ export default function Settings() {
     }
   };
 
-  const handleLogout = () => {
+  const performDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      const { error } = await supabase.rpc("delete_own_account");
+      if (error) throw error;
+      queryClient.clear();
+      await supabase.auth.signOut();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Could not delete account. Please try again.";
+      if (Platform.OS === "web") {
+        window.alert(msg);
+      } else {
+        Alert.alert("Error", msg);
+      }
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    const message = "This permanently deletes your account and all data — IOUs, friends, wishes — and cannot be undone.";
+    if (Platform.OS === "web") {
+      if (window.confirm(`Delete account?\n\n${message}`)) performDeleteAccount();
+      return;
+    }
+    Alert.alert("Delete account?", message, [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete account", style: "destructive", onPress: performDeleteAccount },
+    ]);
+  };
+
+  const handleLogout = async () => {
     // Alert.alert is not implemented in React Native Web — use window.confirm on web.
     if (Platform.OS === "web") {
       if (typeof window !== "undefined" && window.confirm("Are you sure you want to log out?")) {
-        supabase.auth.signOut();
+        await supabase.auth.signOut();
       }
       return;
     }
@@ -80,7 +113,7 @@ export default function Settings() {
       {
         text: "Log out",
         style: "destructive",
-        onPress: () => supabase.auth.signOut(),
+        onPress: async () => { await supabase.auth.signOut(); },
       },
     ]);
   };
@@ -96,6 +129,7 @@ export default function Settings() {
       contentContainerClassName="px-5 pb-8 gap-6"
       contentContainerStyle={{ paddingTop: insets.top + 16 }}
       showsVerticalScrollIndicator={false}
+      keyboardDismissMode="on-drag"
     >
       <Text className="text-2xl font-semibold text-brown-deep dark:text-offwhite">
         Settings
@@ -212,6 +246,14 @@ export default function Settings() {
           <Text className="text-base text-brown-deep dark:text-offwhite">Privacy Policy</Text>
           <Text className="text-brown-muted dark:text-[#8A7385]">›</Text>
         </Pressable>
+        <View className="h-px bg-sand dark:bg-[#3D2B3D]" />
+        <Pressable
+          onPress={() => Linking.openURL("https://myiou.app/tos")}
+          className="px-4 py-4 flex-row items-center justify-between"
+        >
+          <Text className="text-base text-brown-deep dark:text-offwhite">Terms of Service</Text>
+          <Text className="text-brown-muted dark:text-[#8A7385]">›</Text>
+        </Pressable>
       </View>
 
       {/* Logout */}
@@ -220,6 +262,18 @@ export default function Settings() {
         className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#3D2B3D] items-center"
       >
         <Text className="text-base font-semibold text-red-500">Log out</Text>
+      </Pressable>
+
+      {/* Delete Account */}
+      <Pressable
+        onPress={handleDeleteAccount}
+        disabled={deleting}
+        className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#3D2B3D] items-center"
+        style={{ opacity: deleting ? 0.5 : 1 }}
+      >
+        <Text className="text-sm text-[#9E4444] dark:text-[#C47070]">
+          {deleting ? "Deleting…" : "Delete account"}
+        </Text>
       </Pressable>
     </ScrollView>
   );

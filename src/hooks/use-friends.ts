@@ -28,6 +28,8 @@ export function useFriends() {
     queryKey: ["friends", user?.id],
     enabled: !!user,
     queryFn: async () => {
+      const userId = user?.id;
+      if (!userId) throw new Error("Not authenticated");
       const { data, error } = await supabase
         .from("friendships")
         .select(
@@ -41,12 +43,12 @@ export function useFriends() {
           profile_b:profiles!friendships_user_b_id_fkey(display_name, profile_pic_url)
         `
         )
-        .or(`user_a_id.eq.${user!.id},user_b_id.eq.${user!.id}`);
+        .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`);
 
       if (error) throw error;
 
       return (data ?? []).map((f) => {
-        const isA = f.user_a_id === user!.id;
+        const isA = f.user_a_id === userId;
         const profile = isA
           ? (f.profile_b as { display_name: string; profile_pic_url: string | null })
           : (f.profile_a as { display_name: string; profile_pic_url: string | null });
@@ -79,7 +81,7 @@ export function usePendingRequests() {
           receiver:profiles!friend_requests_to_user_id_fkey(display_name, profile_pic_url)
         `
         )
-        .eq("to_user_id", user!.id)
+        .eq("to_user_id", user?.id ?? "")
         .eq("status", "pending")
         .order("created_at", { ascending: false });
 
@@ -95,9 +97,11 @@ export function useSendFriendRequest() {
 
   return useMutation({
     mutationFn: async (receiverId: string) => {
+      const userId = user?.id;
+      if (!userId) throw new Error("Not authenticated");
       const { error } = await supabase
         .from("friend_requests")
-        .insert({ from_user_id: user!.id, to_user_id: receiverId });
+        .insert({ from_user_id: userId, to_user_id: receiverId });
       if (error) throw error;
     },
     onSuccess: () => {

@@ -66,14 +66,14 @@ export function useFriendTree({
         const iouPts = allIOUs.filter(
           (i) =>
             i.creator_id === userId &&
-            i.completed_at! >= fromTs &&
-            (toTs === undefined || i.completed_at! < toTs)
+            (i.completed_at ?? "") >= fromTs &&
+            (toTs === undefined || (i.completed_at ?? "") < toTs)
         ).length;
         const wishPts = allWishes.filter(
           (w) =>
             w.target_id === userId &&
-            w.confirmed_at! >= fromTs &&
-            (toTs === undefined || w.confirmed_at! < toTs)
+            (w.confirmed_at ?? "") >= fromTs &&
+            (toTs === undefined || (w.confirmed_at ?? "") < toTs)
         ).length * 2;
         return iouPts + wishPts;
       };
@@ -110,8 +110,7 @@ export function useFriendTree({
     if (query.data?.state === "dull" || query.data?.state === "dead") {
       supabase.rpc("maybe_notify_tree_dull", { p_friendship_id: friendshipId });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.data?.state]);
+  }, [query.data?.state, friendshipId]);
 
   return query;
 }

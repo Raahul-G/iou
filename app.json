@@ -9,7 +9,10 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.fridayvision.iou",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"]
+      }
     },
     "android": {
       "package": "com.fridayvision.iou",
@@ -18,10 +21,7 @@
         "foregroundImage": "./assets/images/app-icon.png",
         "backgroundColor": "#fff1e4"
       },
-      "predictiveBackGestureEnabled": false,
-      "permissions": [
-        "android.permission.RECORD_AUDIO"
-      ]
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
@@ -52,6 +52,14 @@
           "url": "https://sentry.io/",
           "project": "iou",
           "organization": "fridayvision"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/app-icon.png",
+          "color": "#D4A5A5",
+          "defaultChannel": "default"
         }
       ]
     ],

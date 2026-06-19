@@ -10,12 +10,15 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "reset-project": "node ./scripts/reset-project.js",
-    "supabase:types": "supabase gen types typescript --project-id lhosxrmssurdsdvvlhma --schema public > src/types/database.types.ts"
+    "supabase:types": "supabase gen types typescript --project-id lhosxrmssurdsdvvlhma --schema public > src/types/database.types.ts",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@expo-google-fonts/dancing-script": "^0.4.2",
     "@expo/ui": "~56.0.15",
     "@react-native-async-storage/async-storage": "^2.1.2",
+    "@react-native-community/netinfo": "12.0.1",
     "@sentry/react-native": "~7.11.0",
     "@supabase/supabase-js": "^2.50.0",
     "@tanstack/react-query": "^5.80.5",
@@ -27,6 +30,7 @@
     "expo-image": "~56.0.9",
     "expo-image-picker": "^56.0.15",
     "expo-linking": "~56.0.13",
+    "expo-notifications": "~56.0.18",
     "expo-router": "~56.2.8",
     "expo-secure-store": "~56.0.4",
     "expo-splash-screen": "~56.0.10",
@@ -48,7 +52,11 @@
     "zustand": "^5.0.5"
   },
   "devDependencies": {
+    "@testing-library/react-native": "^14.0.0",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.2.2",
+    "jest": "^30.4.2",
+    "jest-expo": "^56.0.5",
     "tailwindcss": "^3.4.17",
     "typescript": "~6.0.3"
   }

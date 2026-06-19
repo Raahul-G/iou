@@ -37,6 +37,8 @@ export function usePartnership() {
     queryKey: ["partnership", user?.id],
     enabled: !!user,
     queryFn: async () => {
+      const userId = user?.id;
+      if (!userId) throw new Error("Not authenticated");
       const { data, error } = await supabase
         .from("partnerships")
         .select(
@@ -46,7 +48,7 @@ export function usePartnership() {
           fertilizer:profiles!partnerships_fertilizer_id_fkey(display_name, profile_pic_url)
         `
         )
-        .or(`water_id.eq.${user!.id},fertilizer_id.eq.${user!.id}`)
+        .or(`water_id.eq.${userId},fertilizer_id.eq.${userId}`)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -54,7 +56,7 @@ export function usePartnership() {
 
       // Prefer active over any pending invite
       const row = data.find((p) => p.status === "active") ?? data[0];
-      const isWater = row.water_id === user!.id;
+      const isWater = row.water_id === userId;
       const partnerProfile = isWater
         ? (row.fertilizer as { display_name: string; profile_pic_url: string | null })
         : (row.water as { display_name: string; profile_pic_url: string | null });
@@ -93,12 +95,14 @@ export function useSendPartnerInvite() {
       partnerId: string;
       myRole: PartnerRole;
     }) => {
-      const water_id = myRole === "water" ? user!.id : partnerId;
-      const fertilizer_id = myRole === "fertilizer" ? user!.id : partnerId;
+      const userId = user?.id;
+      if (!userId) throw new Error("Not authenticated");
+      const water_id = myRole === "water" ? userId : partnerId;
+      const fertilizer_id = myRole === "fertilizer" ? userId : partnerId;
       const { error } = await supabase.from("partnerships").insert({
         water_id,
         fertilizer_id,
-        inviter_id: user!.id,
+        inviter_id: userId,
       });
       if (error) throw error;
     },
@@ -216,14 +220,14 @@ export function useTreeScore(partnership: Partnership | null | undefined) {
         const iouPts = allIOUs.filter(
           (i) =>
             i.creator_id === userId &&
-            i.completed_at! >= fromTs &&
-            (toTs === undefined || i.completed_at! < toTs)
+            (i.completed_at ?? "") >= fromTs &&
+            (toTs === undefined || (i.completed_at ?? "") < toTs)
         ).length;
         const wishPts = allWishes.filter(
           (w) =>
             w.target_id === userId &&
-            w.confirmed_at! >= fromTs &&
-            (toTs === undefined || w.confirmed_at! < toTs)
+            (w.confirmed_at ?? "") >= fromTs &&
+            (toTs === undefined || (w.confirmed_at ?? "") < toTs)
         ).length * 2;
         return iouPts + wishPts;
       };

@@ -54,10 +54,12 @@ export function useBalance(friendshipId: string) {
 
       if (error) throw error;
 
+      const userId = user?.id;
+      if (!userId) throw new Error("Not authenticated");
       const active = data ?? [];
       return {
-        i_owe: active.filter((iou) => iou.creator_id === user!.id).length,
-        they_owe: active.filter((iou) => iou.receiver_id === user!.id).length,
+        i_owe: active.filter((iou) => iou.creator_id === userId).length,
+        they_owe: active.filter((iou) => iou.receiver_id === userId).length,
       } as Balance;
     },
   });
@@ -81,7 +83,7 @@ export function useCreateIOU() {
         title: payload.title,
         category: payload.category ?? "other",
         note: payload.note,
-        creator_id: user!.id,
+        creator_id: user?.id ?? "",
       });
       if (error) throw error;
     },

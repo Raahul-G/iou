@@ -17,6 +17,7 @@ export function Input({ label, error, hint, style, ...props }: InputProps) {
       )}
       <TextInput
         {...props}
+        accessibilityLabel={label}
         placeholderTextColor={colorScheme === "dark" ? "#9E8A9E" : "#8C7676"}
         className={[
           "rounded-xl border px-4 py-3.5 text-base",

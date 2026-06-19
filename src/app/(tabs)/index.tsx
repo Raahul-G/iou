@@ -1,3 +1,4 @@
+import React, { memo } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -12,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthStore } from "@/store/auth.store";
 import { useFriends, type FriendProfile } from "@/hooks/use-friends";
 import { useScores } from "@/hooks/use-ious";
+import { debouncedPush } from "@/lib/navigation";
 
 // ─── Inline tree emoji from scores (no extra query) ──────────────────────────
 
@@ -23,7 +25,7 @@ function treeEmoji(thisMonth: number, allTime: number): string {
 
 // ─── Friend card ──────────────────────────────────────────────────────────────
 
-function FriendCard({ friend }: { friend: FriendProfile }) {
+const FriendCard = memo(function FriendCard({ friend }: { friend: FriendProfile }) {
   const { data: scores } = useScores(friend.friendship_id);
   const label = friend.nickname || friend.display_name;
 
@@ -40,7 +42,7 @@ function FriendCard({ friend }: { friend: FriendProfile }) {
   return (
     <Pressable
       onPress={() =>
-        router.push({
+        debouncedPush({
           pathname: "/friend/[id]",
           params: {
             id: friend.friendship_id,
@@ -53,6 +55,8 @@ function FriendCard({ friend }: { friend: FriendProfile }) {
         })
       }
       className="flex-row items-center gap-3 bg-white dark:bg-bark-card rounded-xl px-4 py-3.5 border border-sand dark:border-[#3D2B3D] active:opacity-80"
+      accessibilityRole="button"
+      accessibilityLabel={`${label}, ${statsText()}`}
     >
       {/* Avatar */}
       {friend.profile_pic_url ? (
@@ -84,7 +88,7 @@ function FriendCard({ friend }: { friend: FriendProfile }) {
       <Text className="text-brown-muted dark:text-[#8A7385]">›</Text>
     </Pressable>
   );
-}
+});
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
@@ -108,6 +112,7 @@ export default function Dashboard() {
         <RefreshControl refreshing={isRefetching} onRefresh={refetchFriends} />
       }
       showsVerticalScrollIndicator={false}
+      keyboardDismissMode="on-drag"
     >
       {/* Header */}
       <View className="flex-row items-center justify-between">
@@ -120,8 +125,10 @@ export default function Dashboard() {
           </Text>
         </View>
         <Pressable
-          onPress={() => router.push("/search")}
+          onPress={() => debouncedPush("/search")}
           className="bg-brown-warm dark:bg-umber rounded-full px-4 py-2"
+          accessibilityRole="button"
+          accessibilityLabel="Add friend"
         >
           <Text className="text-sm font-semibold text-white">+ Friend</Text>
         </Pressable>
@@ -159,8 +166,10 @@ export default function Dashboard() {
             Add a friend to start trading IOUs and growing trees together.
           </Text>
           <Pressable
-            onPress={() => router.push("/search")}
+            onPress={() => debouncedPush("/search")}
             className="mt-2 bg-brown-warm dark:bg-umber rounded-full px-6 py-3"
+            accessibilityRole="button"
+            accessibilityLabel="Add your first friend"
           >
             <Text className="text-sm font-semibold text-white">
               Add your first friend

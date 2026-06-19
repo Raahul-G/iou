@@ -48,8 +48,7 @@ export default function SearchScreen() {
 
     try {
       // Look up user by email via auth.users → profiles join
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error: rpcError } = await (supabase.rpc as any)(
+      const { data, error: rpcError } = await supabase.rpc(
         "find_user_by_email",
         { search_email: trimmed }
       );
