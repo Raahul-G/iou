@@ -45,8 +45,23 @@ export default function SignUp() {
     setLoading(true);
 
     try {
+      const trimmedEmail = email.trim().toLowerCase();
+
+      // Pre-check: if the email is already registered, stop early.
+      // supabase.auth.signUp() silently succeeds for existing emails (enumeration
+      // protection), which leaves the user stuck on the OTP screen with no code.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: existing } = await (supabase.rpc as any)(
+        "find_user_by_email",
+        { search_email: trimmedEmail }
+      );
+      if (existing && existing.length > 0) {
+        setErrors({ form: "An account with this email already exists. Sign in instead." });
+        return;
+      }
+
       const { error } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
+        email: trimmedEmail,
         password,
       });
 
@@ -58,7 +73,7 @@ export default function SignUp() {
       // OTP sent — navigate to verify screen
       router.push({
         pathname: "/(auth)/verify",
-        params: { email: email.trim().toLowerCase() },
+        params: { email: trimmedEmail },
       });
     } finally {
       setLoading(false);

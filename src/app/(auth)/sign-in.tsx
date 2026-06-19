@@ -40,7 +40,7 @@ export default function SignIn() {
         email: email.trim().toLowerCase(),
         password,
       });
-      if (error) setError(error.message);
+      if (error) setError("Couldn't sign in. If you registered with Google, use the Google button below.");
       // Success: onAuthStateChange in _layout.tsx handles navigation
     } finally {
       setLoading(false);
