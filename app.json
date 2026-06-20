@@ -9,10 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.fridayvision.iou",
-      "supportsTablet": false,
-      "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"]
-      }
+      "supportsTablet": false
     },
     "android": {
       "package": "com.fridayvision.iou",
