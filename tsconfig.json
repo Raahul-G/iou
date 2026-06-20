@@ -18,5 +18,11 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "jest.setup.ts",
+    "src/__tests__",
+    "supabase/functions"
   ]
 }

@@ -52,10 +52,8 @@ async function registerForPushNotifications(): Promise<string | null> {
   return token;
 }
 
-// Upsert push token to DB via raw PostgREST call
-// (push_tokens table may not be in generated types until types are regenerated)
 async function upsertPushToken(userId: string, token: string, platform: string) {
-  const { error } = await (supabase as any).from("push_tokens").upsert(
+  const { error } = await supabase.from("push_tokens").upsert(
     {
       user_id: userId,
       token,

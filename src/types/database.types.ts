@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       friend_requests: {
@@ -196,6 +171,7 @@ export type Database = {
           id: string
           is_read: boolean
           message: string | null
+          related_friendship_id: string | null
           related_iou_id: string | null
           related_partnership_id: string | null
           related_user_id: string | null
@@ -209,6 +185,7 @@ export type Database = {
           id?: string
           is_read?: boolean
           message?: string | null
+          related_friendship_id?: string | null
           related_iou_id?: string | null
           related_partnership_id?: string | null
           related_user_id?: string | null
@@ -222,6 +199,7 @@ export type Database = {
           id?: string
           is_read?: boolean
           message?: string | null
+          related_friendship_id?: string | null
           related_iou_id?: string | null
           related_partnership_id?: string | null
           related_user_id?: string | null
@@ -231,6 +209,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "notifications_related_friendship_id_fkey"
+            columns: ["related_friendship_id"]
+            isOneToOne: false
+            referencedRelation: "friendships"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "notifications_related_iou_id_fkey"
             columns: ["related_iou_id"]
@@ -350,6 +335,41 @@ export type Database = {
         }
         Relationships: []
       }
+      push_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          platform: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          platform: string
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          platform?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_tokens_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wishes: {
         Row: {
           accepted_at: string | null
@@ -358,11 +378,11 @@ export type Database = {
           creator_id: string
           decline_mood: string | null
           decline_text: string | null
+          friendship_id: string
           fulfilled_at: string | null
           held_at: string | null
           id: string
           mood: string
-          partnership_id: string
           status: string
           target_id: string
           text: string
@@ -377,11 +397,11 @@ export type Database = {
           creator_id: string
           decline_mood?: string | null
           decline_text?: string | null
+          friendship_id: string
           fulfilled_at?: string | null
           held_at?: string | null
           id?: string
           mood: string
-          partnership_id: string
           status?: string
           target_id: string
           text: string
@@ -396,11 +416,11 @@ export type Database = {
           creator_id?: string
           decline_mood?: string | null
           decline_text?: string | null
+          friendship_id?: string
           fulfilled_at?: string | null
           held_at?: string | null
           id?: string
           mood?: string
-          partnership_id?: string
           status?: string
           target_id?: string
           text?: string
@@ -417,10 +437,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "wishes_partnership_id_fkey"
-            columns: ["partnership_id"]
+            foreignKeyName: "wishes_friendship_id_fkey"
+            columns: ["friendship_id"]
             isOneToOne: false
-            referencedRelation: "partnerships"
+            referencedRelation: "friendships"
             referencedColumns: ["id"]
           },
           {
@@ -452,7 +472,7 @@ export type Database = {
         | {
             Args: {
               p_message: string
-              p_related_partnership_id: string
+              p_related_friendship_id: string
               p_related_user_id: string
               p_related_wish_id: string
               p_title: string
@@ -461,10 +481,7 @@ export type Database = {
             }
             Returns: undefined
           }
-      delete_own_account: {
-        Args: Record<string, never>
-        Returns: undefined
-      }
+      delete_own_account: { Args: never; Returns: undefined }
       find_user_by_email: {
         Args: { search_email: string }
         Returns: {
@@ -472,6 +489,10 @@ export type Database = {
           id: string
           profile_pic_url: string
         }[]
+      }
+      maybe_notify_tree_dull: {
+        Args: { p_friendship_id: string }
+        Returns: undefined
       }
     }
     Enums: {
@@ -601,9 +622,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
