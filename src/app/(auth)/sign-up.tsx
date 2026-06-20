@@ -95,7 +95,6 @@ export default function SignUp() {
             source={require("../../../assets/images/splash-icon.png")}
             style={{ width: 96, height: 96 }}
             resizeMode="contain"
-            pointerEvents="none"
           />
           <Text
             style={{ fontFamily: "DancingScript_600SemiBold", fontSize: 20 }}

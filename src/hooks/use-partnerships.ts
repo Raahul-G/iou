@@ -201,12 +201,14 @@ export function useTreeScore(partnership: Partnership | null | undefined) {
 
       if (iouError) throw iouError;
 
-      // All confirmed wishes in this partnership in the last 28 days.
+      // All confirmed wishes between the two partners in the last 28 days.
       // Target (fulfiller) gets 2 pts per confirmed wish.
       const { data: wishes, error: wishError } = await supabase
         .from("wishes")
         .select("target_id, confirmed_at")
-        .eq("partnership_id", partnershipId)
+        .or(
+          `and(creator_id.eq.${myId},target_id.eq.${partnerId}),and(creator_id.eq.${partnerId},target_id.eq.${myId})`
+        )
         .eq("status", "confirmed")
         .gte("confirmed_at", window28);
 
