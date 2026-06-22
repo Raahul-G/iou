@@ -181,6 +181,8 @@ function AuthGuard() {
       // Clear in-progress flag so a fresh listener registration starts cleanly
       setExchangingOAuth(false);
     };
+    // Zustand setters (setExchangingOAuth, setOAuthError) are stable references — safe to omit
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Listen for Supabase auth state changes — handles login, logout, and auto-login on restart
@@ -239,6 +241,8 @@ function AuthGuard() {
     );
 
     return () => listener.subscription.unsubscribe();
+    // Zustand setters (setSession, setLoading, setProfile, reset) are stable references — safe to omit
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Push notifications — register token when user is authenticated
@@ -257,6 +261,8 @@ function AuthGuard() {
     } else if (session && inAuthGroup && !onCreateProfile) {
       router.replace("/");
     }
+    // router from expo-router is a stable singleton — safe to omit
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, isLoading, segments]);
 
   return null;

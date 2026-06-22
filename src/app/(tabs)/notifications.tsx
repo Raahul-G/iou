@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { router, useFocusEffect } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { debouncedPush } from "@/lib/navigation";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
@@ -93,6 +93,7 @@ function NotifCard({
 }) {
   const icon = NOTIF_ICONS[notif.type] ?? "🔔";
   const timeAgo = (() => {
+    // eslint-disable-next-line react-hooks/purity
     const diff = Date.now() - new Date(notif.created_at).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 60) return `${mins}m ago`;
@@ -295,7 +296,7 @@ export default function Notifications() {
         <View className="items-center mt-20 gap-2">
           <Text className="text-4xl">⚠️</Text>
           <Text className="text-base font-medium text-brown-deep dark:text-offwhite">
-            Couldn't load notifications
+            {"Couldn't load notifications"}
           </Text>
           <Pressable onPress={refetch} className="mt-1">
             <Text className="text-sm text-brown-warm dark:text-umber">Try again</Text>

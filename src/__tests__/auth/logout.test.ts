@@ -47,7 +47,7 @@ describe("logout flow", () => {
   it("full logout sequence: signOut → queryClient.clear → store reset", async () => {
     const callOrder: string[] = [];
 
-    const signOutSpy = (supabase.auth.signOut as jest.Mock).mockImplementation(() => {
+    (supabase.auth.signOut as jest.Mock).mockImplementation(() => {
       callOrder.push("signOut");
       return Promise.resolve({});
     });
@@ -55,8 +55,6 @@ describe("logout flow", () => {
     (queryClient.clear as jest.Mock).mockImplementation(() => {
       callOrder.push("clear");
     });
-
-    const originalReset = useAuthStore.getState().reset;
 
     // Simulate the logout sequence as done in the onAuthStateChange handler
     await supabase.auth.signOut();

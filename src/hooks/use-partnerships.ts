@@ -186,7 +186,7 @@ export function useTreeScore(partnership: Partnership | null | undefined) {
         ? partnership!.water_id
         : partnership!.fertilizer_id;
       const partnerId = partnership!.partner_id;
-      const { id: partnershipId, activated_at } = partnership!;
+      const { activated_at } = partnership!;
 
       // All completed IOUs between the two partners in the last 28 days.
       // Creator gets 1 pt per completed IOU.

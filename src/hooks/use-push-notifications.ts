@@ -106,5 +106,7 @@ export function usePushNotifications() {
       receivedListenerRef.current?.remove();
       responseListenerRef.current?.remove();
     };
+    // queryClient is a stable singleton; user object is covered by user?.id
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, profile?.notifications_enabled]);
 }

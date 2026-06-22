@@ -35,6 +35,7 @@ export default function Settings() {
   // Sync the input field when it arrives so it isn't blank on hard refresh.
   useEffect(() => {
     if (profile?.display_name) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplayName(profile.display_name);
     }
   }, [profile?.display_name]);

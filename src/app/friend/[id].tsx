@@ -176,12 +176,6 @@ export default function FriendDetail() {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
 
-  // Guard against missing route params or unauthenticated state
-  if (!id || !friendId || !user) {
-    router.replace("/");
-    return null;
-  }
-
   // ── Data ──────────────────────────────────────────────────────────
   const {
     data: ious,
@@ -189,16 +183,16 @@ export default function FriendDetail() {
     error: iouError,
     refetch: refetchIOUs,
     isRefetching,
-  } = useIOUs(id);
-  const { data: scores } = useScores(id);
+  } = useIOUs(id ?? "");
+  const { data: scores } = useScores(id ?? "");
   const { data: treeScore, isLoading: treeLoading } = useFriendTree({
-    friendshipId: id,
-    myId: user.id,
-    friendId,
+    friendshipId: id ?? "",
+    myId: user?.id ?? "",
+    friendId: friendId ?? "",
     isUserA,
   });
-  const { data: activeWish, isLoading: wishLoading } = useActiveWish(id);
-  const { data: wishHistory, isLoading: wishHistoryLoading } = useWishHistory(id);
+  const { data: activeWish, isLoading: wishLoading } = useActiveWish(id ?? "");
+  const { data: wishHistory, isLoading: wishHistoryLoading } = useWishHistory(id ?? "");
 
   // ── Mutations ─────────────────────────────────────────────────────
   const updateIOUStatus = useUpdateIOUStatus();
@@ -219,6 +213,12 @@ export default function FriendDetail() {
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [iouPageLimit, setIouPageLimit] = useState(20);
   const [wishHistoryLimit, setWishHistoryLimit] = useState(3);
+
+  // Guard against missing route params or unauthenticated state
+  if (!id || !friendId || !user) {
+    router.replace("/");
+    return null;
+  }
 
   // ── Tree visual ───────────────────────────────────────────────────
   const isNew = scores?.all_time === 0;
@@ -428,7 +428,7 @@ export default function FriendDetail() {
         {iouError ? (
           <View className="items-center mt-4 gap-2">
             <Text className="text-4xl">⚠️</Text>
-            <Text className="text-base font-medium text-brown-deep dark:text-offwhite">Couldn't load IOUs</Text>
+            <Text className="text-base font-medium text-brown-deep dark:text-offwhite">{"Couldn't load IOUs"}</Text>
             <Pressable onPress={() => refetchIOUs()} className="mt-1">
               <Text className="text-sm text-brown-warm dark:text-umber">Try again</Text>
             </Pressable>
@@ -550,7 +550,7 @@ export default function FriendDetail() {
               <View className="gap-2">
                 <Button label="Accept ✓" onPress={handleWishAccept} loading={updateWish.isPending} />
                 <Text className="text-xs text-brown-muted dark:text-[#8A7385] text-center">
-                  You said "not right now" — you can still accept.
+                  {'You said "not right now" \u2014 you can still accept.'}
                 </Text>
               </View>
             )}

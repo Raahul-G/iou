@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  ActivityIndicator,
   Image,
   Pressable,
   Text,
@@ -124,7 +123,7 @@ export default function SearchScreen() {
               No user found
             </Text>
             <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center">
-              Make sure they've signed up for IOU with that email.
+              {"Make sure they've signed up for IOU with that email."}
             </Text>
           </View>
         )}

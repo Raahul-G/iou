@@ -185,7 +185,7 @@ export default function SignIn() {
 
         <View className="mt-8 flex-row items-center justify-center gap-1">
           <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
-            Don't have an account?
+            {"Don't have an account?"}
           </Text>
           <Pressable
             onPress={() => router.push("/(auth)/sign-up")}

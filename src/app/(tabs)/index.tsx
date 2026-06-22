@@ -8,7 +8,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthStore } from "@/store/auth.store";
 import { useFriends, type FriendProfile } from "@/hooks/use-friends";
@@ -139,7 +138,7 @@ export default function Dashboard() {
         <View className="items-center mt-8 gap-2">
           <Text className="text-4xl">⚠️</Text>
           <Text className="text-base font-medium text-brown-deep dark:text-offwhite">
-            Couldn't load friends
+            {"Couldn't load friends"}
           </Text>
           <Pressable onPress={() => refetchFriends()} className="mt-1">
             <Text className="text-sm text-brown-warm dark:text-umber">Try again</Text>

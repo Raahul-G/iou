@@ -34,6 +34,7 @@ export default function PartnerPending() {
   const acceptInvite = useAcceptPartnerInvite();
   const declineOrCancel = useDeclineOrCancelPartnership();
   const [error, setError] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
 
   if (isLoading) {
     return (
@@ -48,8 +49,6 @@ export default function PartnerPending() {
     router.replace("/");
     return null;
   }
-
-  const insets = useSafeAreaInsets();
   const isInvitee = partnership.inviter_id !== user?.id;
   const myRole = partnership.my_role;
   const partnerRole = OTHER_ROLE[myRole];

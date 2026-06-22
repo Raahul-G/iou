@@ -21,7 +21,7 @@ export function OfflineBanner() {
   return (
     <View className="bg-amber-500 px-4 py-2 items-center">
       <Text className="text-xs font-semibold text-white">
-        You're offline — changes will sync when you reconnect.
+        {"You're offline \u2014 changes will sync when you reconnect."}
       </Text>
     </View>
   );

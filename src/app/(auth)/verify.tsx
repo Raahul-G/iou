@@ -21,14 +21,6 @@ export default function Verify() {
   const [cooldown, setCooldown] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    // Start initial cooldown so user doesn't spam resend immediately
-    startCooldown();
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
   const startCooldown = () => {
     setCooldown(RESEND_COOLDOWN_SECS);
     timerRef.current = setInterval(() => {
@@ -41,6 +33,15 @@ export default function Verify() {
       });
     }, 1000);
   };
+
+  useEffect(() => {
+    // Start initial cooldown so user doesn't spam resend immediately
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    startCooldown();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
   const handleVerify = async () => {
     const trimmedCode = code.trim();

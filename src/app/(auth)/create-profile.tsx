@@ -25,9 +25,10 @@ export default function CreateProfile() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Pre-fill with auto-created profile name
+  // Pre-fill with auto-created profile name (profile loads async after mount)
   useEffect(() => {
     if (profile?.display_name) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplayName(profile.display_name);
     }
     if (profile?.profile_pic_url) {
