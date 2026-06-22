@@ -163,6 +163,7 @@ function AuthGuard() {
             flow: "oauth_deep_link",
           });
           setOAuthError("Google sign-in failed. Please try again.");
+          return;
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : "Google sign-in failed. Please try again.";
@@ -203,13 +204,16 @@ function AuthGuard() {
           SplashScreen.hideAsync();
 
           // Fetch profile in the background — does not block the route guard.
+          const fetchUserId = newSession.user.id;
           supabase
             .from("profiles")
             .select("*")
-            .eq("id", newSession.user.id)
+            .eq("id", fetchUserId)
             .single()
             .then(
               ({ data: profile }) => {
+                // Guard: if user logged out or switched accounts while fetch was in-flight, discard
+                if (useAuthStore.getState().user?.id !== fetchUserId) return;
                 if (profile) {
                   setProfile(profile);
                   applyTheme(

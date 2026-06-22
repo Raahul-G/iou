@@ -95,10 +95,8 @@ export default function SignIn() {
       // the base URL without ?code= on some devices). The Linking event
       // always carries the full URL and is the single exchange point.
       if (result.type === "cancel" || result.type === "dismiss") {
-        captureError(new Error(`OAuth browser closed: ${result.type}`), {
-          flow: "google_sign_in",
-          result_type: result.type,
-        });
+        // User closed the browser — normal flow, not an error
+        return;
       }
     } catch (err: unknown) {
       const message =
