@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { captureError } from "@/lib/analytics";
 
 export type FriendTreeScore = {
   myScore: number;
@@ -108,7 +109,10 @@ export function useFriendTree({
   // Fire tree_dull notification when tree is not alive (at most once per 7 days — deduped in DB)
   useEffect(() => {
     if (query.data?.state === "dull" || query.data?.state === "dead") {
-      supabase.rpc("maybe_notify_tree_dull", { p_friendship_id: friendshipId });
+      supabase.rpc("maybe_notify_tree_dull", { p_friendship_id: friendshipId })
+        .then(({ error }) => {
+          if (error) captureError(error, { flow: "tree_dull_notify", friendshipId });
+        });
     }
   }, [query.data?.state, friendshipId]);
 

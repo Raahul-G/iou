@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
 import { useUpdateProfile, useUploadAvatar } from "@/hooks/use-profile";
+import { captureError } from "@/lib/analytics";
 import { queryClient } from "@/lib/query-client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,8 @@ export default function Settings() {
 
   const [displayName, setDisplayName] = useState(profile?.display_name ?? "");
   const [nameError, setNameError] = useState<string | null>(null);
+  const [themeError, setThemeError] = useState<string | null>(null);
+  const [notifError, setNotifError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   // Profile loads async after mount (background fetch in _layout.tsx).
@@ -54,18 +57,22 @@ export default function Settings() {
   };
 
   const handleTheme = async (value: ThemeOption) => {
+    setThemeError(null);
     try {
       await updateProfile.mutateAsync({ theme_preference: value });
-    } catch {
-      // UI reflects profile state — if mutation fails, button reverts automatically.
+    } catch (err) {
+      captureError(err instanceof Error ? err : new Error(String(err)), { flow: "settings_theme" });
+      setThemeError("Couldn't save theme. Try again.");
     }
   };
 
   const handleNotifToggle = async (value: boolean) => {
+    setNotifError(null);
     try {
       await updateProfile.mutateAsync({ notifications_enabled: value });
-    } catch {
-      // UI reflects profile state — if mutation fails, toggle reverts automatically.
+    } catch (err) {
+      captureError(err instanceof Error ? err : new Error(String(err)), { flow: "settings_notif" });
+      setNotifError("Couldn't save notification setting. Try again.");
     }
   };
 
@@ -214,27 +221,35 @@ export default function Settings() {
             </Pressable>
           ))}
         </View>
+        {themeError && (
+          <Text className="text-xs text-red-500">{themeError}</Text>
+        )}
       </View>
 
       {/* Notifications toggle */}
-      <View className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#3D2B3D] flex-row items-center justify-between">
-        <View>
-          <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
-            Notifications
-          </Text>
-          <Text className="text-xs text-brown-muted dark:text-[#8A7385] mt-0.5">
-            Friend requests, IOU updates
-          </Text>
+      <View className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#3D2B3D] gap-1">
+        <View className="flex-row items-center justify-between">
+          <View>
+            <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
+              Notifications
+            </Text>
+            <Text className="text-xs text-brown-muted dark:text-[#8A7385] mt-0.5">
+              Friend requests, IOU updates
+            </Text>
+          </View>
+          <Switch
+            value={notifsEnabled}
+            onValueChange={handleNotifToggle}
+            trackColor={{
+              false: colorScheme === "dark" ? "#4A354A" : "#E5D5C5",
+              true: colorScheme === "dark" ? "#9E7E8A" : "#D4A5A5",
+            }}
+            thumbColor="#fff"
+          />
         </View>
-        <Switch
-          value={notifsEnabled}
-          onValueChange={handleNotifToggle}
-          trackColor={{
-            false: colorScheme === "dark" ? "#4A354A" : "#E5D5C5",
-            true: colorScheme === "dark" ? "#9E7E8A" : "#D4A5A5",
-          }}
-          thumbColor="#fff"
-        />
+        {notifError && (
+          <Text className="text-xs text-red-500">{notifError}</Text>
+        )}
       </View>
 
       {/* About */}

@@ -3,6 +3,7 @@ import * as ImagePicker from "expo-image-picker";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
 import { applyTheme } from "@/lib/theme";
+import { captureError } from "@/lib/analytics";
 
 export function useUpdateProfile() {
   const { user, setProfile } = useAuthStore();
@@ -78,15 +79,21 @@ export function useUploadAvatar() {
       if (uploadError) throw uploadError;
 
       // Clean up stale files (e.g. old extension changes) — safe since new avatar is already uploaded
-      const { data: existing } = await supabase.storage
+      // Errors here are non-fatal: the upload succeeded, cleanup is best-effort.
+      const { data: existing, error: listError } = await supabase.storage
         .from("avatars")
         .list(userId);
-      if (existing && existing.length > 0) {
+      if (listError) {
+        captureError(listError, { flow: "avatar_cleanup_list", userId });
+      } else if (existing && existing.length > 0) {
         const stale = existing.filter((f) => f.name !== "avatar.jpg");
         if (stale.length > 0) {
-          await supabase.storage
+          const { error: removeError } = await supabase.storage
             .from("avatars")
             .remove(stale.map((f) => `${userId}/${f.name}`));
+          if (removeError) {
+            captureError(removeError, { flow: "avatar_cleanup_remove", userId });
+          }
         }
       }
 
