@@ -198,7 +198,7 @@ export default function FriendDetail() {
     isUserA,
   });
   const { data: activeWish, isLoading: wishLoading } = useActiveWish(id);
-  const { data: wishHistory } = useWishHistory(id);
+  const { data: wishHistory, isLoading: wishHistoryLoading } = useWishHistory(id);
 
   // ── Mutations ─────────────────────────────────────────────────────
   const updateIOUStatus = useUpdateIOUStatus();
@@ -218,6 +218,7 @@ export default function FriendDetail() {
   const [thankYouNote, setThankYouNote] = useState("");
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [iouPageLimit, setIouPageLimit] = useState(20);
+  const [wishHistoryLimit, setWishHistoryLimit] = useState(3);
 
   // ── Tree visual ───────────────────────────────────────────────────
   const isNew = scores?.all_time === 0;
@@ -599,14 +600,23 @@ export default function FriendDetail() {
             )}
 
             {/* Past wishes */}
-            {wishHistory && wishHistory.length > 0 && (
+            {wishHistoryLoading ? (
+              <ActivityIndicator size="small" className="mt-2" />
+            ) : wishHistory && wishHistory.length > 0 && (
               <View className="gap-2 mt-2">
                 <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
                   Past wishes
                 </Text>
                 <View className="gap-2">
-                  {wishHistory.slice(0, 3).map((w) => <WishBubble key={w.id} wish={w} />)}
+                  {wishHistory.slice(0, wishHistoryLimit).map((w) => <WishBubble key={w.id} wish={w} />)}
                 </View>
+                {wishHistoryLimit < wishHistory.length && (
+                  <Pressable onPress={() => setWishHistoryLimit((v) => v + 3)} className="items-center py-1">
+                    <Text className="text-sm text-brown-warm dark:text-umber font-medium">
+                      Show more ({wishHistory.length - wishHistoryLimit} remaining)
+                    </Text>
+                  </Pressable>
+                )}
               </View>
             )}
           </>
@@ -627,14 +637,23 @@ export default function FriendDetail() {
               <Text className="text-sm font-semibold text-white">Plant a wish ✨</Text>
             </Pressable>
 
-            {wishHistory && wishHistory.length > 0 && (
+            {wishHistoryLoading ? (
+              <ActivityIndicator size="small" className="mt-2" />
+            ) : wishHistory && wishHistory.length > 0 && (
               <View className="gap-2 w-full mt-2">
                 <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
                   Past wishes
                 </Text>
                 <View className="gap-2">
-                  {wishHistory.slice(0, 3).map((w) => <WishBubble key={w.id} wish={w} />)}
+                  {wishHistory.slice(0, wishHistoryLimit).map((w) => <WishBubble key={w.id} wish={w} />)}
                 </View>
+                {wishHistoryLimit < wishHistory.length && (
+                  <Pressable onPress={() => setWishHistoryLimit((v) => v + 3)} className="items-center py-1">
+                    <Text className="text-sm text-brown-warm dark:text-umber font-medium">
+                      Show more ({wishHistory.length - wishHistoryLimit} remaining)
+                    </Text>
+                  </Pressable>
+                )}
               </View>
             )}
           </View>

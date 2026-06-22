@@ -3,6 +3,7 @@ import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
+import { router } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
@@ -98,8 +99,6 @@ export function usePushNotifications() {
 
     // User tapped notification — navigate to notifications tab
     responseListenerRef.current = Notifications.addNotificationResponseReceivedListener(() => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { router } = require("expo-router");
       router.push("/(tabs)/notifications");
     });
 

@@ -155,6 +155,8 @@ export default function Notifications() {
           onError: (err) => captureError(err instanceof Error ? err : new Error(String(err)), { flow: "mark_all_read" }),
         });
       }
+      // markAllRead intentionally omitted from deps: useMutation returns a new object
+      // reference every render — including it would re-run this effect on every render.
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [notifLoading, notifError])
   );
@@ -166,6 +168,7 @@ export default function Notifications() {
   const handleNotifPress = async (notif: AppNotification) => {
     if (notif.type === "friend_request") return;
 
+    try {
     // Wish or tree notification — deep-link to the friend screen
     if (notif.related_friendship_id) {
       const { data } = await supabase
@@ -251,6 +254,11 @@ export default function Notifications() {
     } else {
       // friend_request_accepted or other — go home to see updated friends list
       debouncedPush("/");
+    }
+    } catch (err) {
+      captureError(err instanceof Error ? err : new Error(String(err)), {
+        flow: "notification_deep_link",
+      });
     }
   };
 

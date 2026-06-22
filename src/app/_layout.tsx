@@ -28,15 +28,10 @@ Sentry.init({
   attachStacktrace: true,
 });
 
-if (!process.env.EXPO_PUBLIC_SENTRY_DSN) {
-  if (__DEV__) {
-    console.error(
-      "[IOU] EXPO_PUBLIC_SENTRY_DSN is not set. Crashes will not be reported."
-    );
-  } else {
-    // In production, log to console — Sentry itself can't receive this since DSN is missing
-    console.error("[IOU] Missing EXPO_PUBLIC_SENTRY_DSN — production errors are untracked.");
-  }
+if (!process.env.EXPO_PUBLIC_SENTRY_DSN && __DEV__) {
+  console.error(
+    "[IOU] EXPO_PUBLIC_SENTRY_DSN is not set. Crashes will not be reported."
+  );
 }
 
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
