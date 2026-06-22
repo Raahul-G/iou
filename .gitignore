@@ -28,6 +28,10 @@ ios/
 *.mobileprovision
 *.orig.*
 
+# Firebase credentials
+google-services.json
+GoogleService-Info.plist
+
 # Metro
 .metro-health-check*
 

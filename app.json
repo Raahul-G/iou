@@ -13,6 +13,7 @@
     },
     "android": {
       "package": "com.fridayvision.iou",
+      "googleServicesFile": "./google-services.json",
       "versionCode": 9,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/app-icon.png",
