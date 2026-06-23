@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -94,14 +95,8 @@ export default function SignIn() {
         // User closed the browser — normal flow, not an error
         return;
       }
-
-      // Warm-start fallback: on some Android devices the Linking "url" event
-      // never fires even though openAuthSessionAsync returns the redirect URL.
-      // Re-dispatch it so _layout.tsx's handleUrl picks it up (dedup via
-      // handledOAuthCodes prevents double-exchange if the event DID fire).
-      if (result.type === "success" && result.url) {
-        Linking.openURL(result.url);
-      }
+      // Success: code exchange is handled by the Linking listener in _layout.tsx
+      // (warm start) or getInitialURL (cold start). No action needed here.
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Google sign-in failed.";
@@ -113,6 +108,16 @@ export default function SignIn() {
       setGoogleLoading(false);
     }
   };
+
+  // While the OAuth code is being exchanged, show a plain loading screen so
+  // the sign-in form doesn't flash during the async transition to home.
+  if (isExchangingOAuth) {
+    return (
+      <View className="flex-1 items-center justify-center bg-auth-bg dark:bg-bark">
+        <ActivityIndicator size="large" color="#D4A5A5" />
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
