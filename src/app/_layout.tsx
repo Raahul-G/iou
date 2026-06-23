@@ -176,6 +176,15 @@ function AuthGuard() {
       }
     };
 
+    // Cold start: app was killed while Chrome Custom Tabs was open, then
+    // re-launched via iou:///?code=abc deep link. getInitialURL() is the
+    // ONLY way to retrieve the URL on a cold start — the "url" event
+    // listener below does NOT fire for the launch URL.
+    Linking.getInitialURL().then((url) => {
+      if (url) handleUrl({ url });
+    });
+
+    // Warm start: app was backgrounded but still alive
     const sub = Linking.addEventListener("url", handleUrl);
     return () => {
       sub.remove();

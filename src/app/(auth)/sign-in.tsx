@@ -90,13 +90,17 @@ export default function SignIn() {
         redirectUrl
       );
 
-      // Code exchange is handled by the Linking listener in _layout.tsx —
-      // openAuthSessionAsync's result.url is unreliable on Android (returns
-      // the base URL without ?code= on some devices). The Linking event
-      // always carries the full URL and is the single exchange point.
       if (result.type === "cancel" || result.type === "dismiss") {
         // User closed the browser — normal flow, not an error
         return;
+      }
+
+      // Warm-start fallback: on some Android devices the Linking "url" event
+      // never fires even though openAuthSessionAsync returns the redirect URL.
+      // Re-dispatch it so _layout.tsx's handleUrl picks it up (dedup via
+      // handledOAuthCodes prevents double-exchange if the event DID fire).
+      if (result.type === "success" && result.url) {
+        Linking.openURL(result.url);
       }
     } catch (err: unknown) {
       const message =
