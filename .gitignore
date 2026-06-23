@@ -38,6 +38,8 @@ GoogleService-Info.plist
 # Build outputs
 build/
 out/
+*.aab
+*.apk
 
 # Supabase
 supabase/.temp/
