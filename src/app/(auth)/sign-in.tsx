@@ -86,17 +86,11 @@ export default function SignIn() {
       if (error) throw error;
       if (!data.url) throw new Error("No OAuth URL returned.");
 
-      const result = await WebBrowser.openAuthSessionAsync(
-        data.url,
-        redirectUrl
-      );
-
-      if (result.type === "cancel" || result.type === "dismiss") {
-        // User closed the browser — normal flow, not an error
-        return;
-      }
-      // Success: code exchange is handled by the Linking listener in _layout.tsx
-      // (warm start) or getInitialURL (cold start). No action needed here.
+      // Fire-and-forget: just open the browser. Never inspect result.type —
+      // on production Android "dismiss" fires even on successful OAuth.
+      // _layout.tsx is the single source of truth: getInitialURL() handles
+      // cold starts and addEventListener handles warm starts.
+      await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Google sign-in failed.";
