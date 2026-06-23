@@ -90,6 +90,8 @@ export function useCreateIOU() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ["ious", variables.friendship_id] });
       qc.invalidateQueries({ queryKey: ["balance", variables.friendship_id] });
+      qc.invalidateQueries({ queryKey: ["scores", variables.friendship_id] });
+      qc.invalidateQueries({ queryKey: ["friend-tree"] });
     },
   });
 }
@@ -152,6 +154,8 @@ export function useUpdateIOUStatus() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ["ious", variables.friendshipId] });
       qc.invalidateQueries({ queryKey: ["balance", variables.friendshipId] });
+      qc.invalidateQueries({ queryKey: ["scores", variables.friendshipId] });
+      qc.invalidateQueries({ queryKey: ["friend-tree"] });
     },
   });
 }

@@ -12,20 +12,20 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthStore } from "@/store/auth.store";
 import { useFriends, type FriendProfile } from "@/hooks/use-friends";
 import { useScores } from "@/hooks/use-ious";
+import { useFriendTree, friendTreeVisual } from "@/hooks/use-friend-tree";
 import { debouncedPush } from "@/lib/navigation";
-
-// ─── Inline tree emoji from scores (no extra query) ──────────────────────────
-
-function treeEmoji(thisMonth: number, allTime: number): string {
-  if (allTime === 0) return "🌱";
-  if (thisMonth > 0) return "🌳";
-  return "🌿";
-}
 
 // ─── Friend card ──────────────────────────────────────────────────────────────
 
 const FriendCard = memo(function FriendCard({ friend }: { friend: FriendProfile }) {
+  const { user } = useAuthStore();
   const { data: scores } = useScores(friend.friendship_id);
+  const { data: treeData } = useFriendTree({
+    friendshipId: friend.friendship_id,
+    myId: user?.id ?? "",
+    friendId: friend.friend_id,
+    isUserA: friend.is_user_a,
+  });
   const label = friend.nickname || friend.display_name;
 
   const statsText = () => {
@@ -36,7 +36,8 @@ const FriendCard = memo(function FriendCard({ friend }: { friend: FriendProfile 
     return parts.join(" · ");
   };
 
-  const tree = scores ? treeEmoji(scores.this_month, scores.all_time) : "🌱";
+  const isNew = !treeData || (treeData.myScore === 0 && treeData.friendScore === 0);
+  const { emoji: tree } = friendTreeVisual(treeData, isNew);
 
   return (
     <Pressable
@@ -73,16 +74,16 @@ const FriendCard = memo(function FriendCard({ friend }: { friend: FriendProfile 
 
       {/* Info */}
       <View className="flex-1 gap-0.5">
-        <View className="flex-row items-center gap-1.5">
-          <Text className="text-base font-semibold text-brown-deep dark:text-offwhite" numberOfLines={1}>
-            {label}
-          </Text>
-          <Text style={{ fontSize: 14 }}>{tree}</Text>
-        </View>
+        <Text className="text-base font-semibold text-brown-deep dark:text-offwhite" numberOfLines={1}>
+          {label}
+        </Text>
         <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
           {statsText()}
         </Text>
       </View>
+
+      {/* Tree state — right-aligned */}
+      <Text style={{ fontSize: 18 }}>{tree}</Text>
 
       <Text className="text-brown-muted dark:text-[#8A7385]">›</Text>
     </Pressable>
