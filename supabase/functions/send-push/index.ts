@@ -13,10 +13,10 @@ interface PushPayload {
 }
 
 Deno.serve(async (req: Request) => {
-  // Verify authorization
+  // Verify authorization using a dedicated secret (set via Edge Function secrets)
   const authHeader = req.headers.get("Authorization");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!authHeader || !serviceRoleKey || authHeader !== `Bearer ${serviceRoleKey}`) {
+  const pushAuthToken = Deno.env.get("PUSH_AUTH_TOKEN");
+  if (!authHeader || !pushAuthToken || authHeader !== `Bearer ${pushAuthToken}`) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 
@@ -24,6 +24,7 @@ Deno.serve(async (req: Request) => {
 
   // Create service-role client to read push_tokens
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   // Fetch all push tokens for this user
