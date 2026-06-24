@@ -86,11 +86,17 @@ export default function SignIn() {
       if (error) throw error;
       if (!data.url) throw new Error("No OAuth URL returned.");
 
-      // Fire-and-forget: just open the browser. Never inspect result.type —
-      // on production Android "dismiss" fires even on successful OAuth.
-      // _layout.tsx is the single source of truth: getInitialURL() handles
-      // cold starts and addEventListener handles warm starts.
-      await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+      // On Android, two paths are possible after the OAuth redirect lands:
+      // 1. BrowserProxyActivity intercepts iou:// → result.type === "success",
+      //    result.url is populated, but NO system Linking event fires.
+      // 2. System Linking handles the redirect → result.type === "dismiss",
+      //    Linking event fires and _layout.tsx's handleUrl picks it up.
+      // For path 1, re-dispatch via Linking so handleUrl can exchange the PKCE code.
+      // For path 2, nothing extra needed — handleUrl already caught it.
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+      if (result.type === "success") {
+        Linking.openURL(result.url);
+      }
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Google sign-in failed.";
