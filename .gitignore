@@ -78,6 +78,7 @@ _bmad-output/
 
 #claude
 .claude/
+CLAUDE.md
 scripts/
 docs/
 
