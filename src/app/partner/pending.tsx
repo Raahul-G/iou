@@ -17,6 +17,7 @@ import {
 } from "@/hooks/use-partnerships";
 import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
+import { IconBadge } from "@/components/ui/icon";
 
 const ROLE_LABELS: Record<string, string> = {
   water: "Water 💧",
@@ -112,9 +113,7 @@ export default function PartnerPending() {
                 className="w-24 h-24 rounded-full bg-sand"
               />
             ) : (
-              <View className="w-24 h-24 rounded-full bg-sand dark:bg-[#3D2B3D] items-center justify-center">
-                <Text className="text-5xl">👤</Text>
-              </View>
+              <IconBadge name="person" tone="muted" badgeSize={96} size={44} />
             )}
             <View className="items-center gap-1">
               <Text className="text-2xl font-semibold text-brown-deep dark:text-offwhite">
@@ -180,7 +179,7 @@ export default function PartnerPending() {
         {isInvitee ? (
           <View className="gap-3">
             <Button
-              label="Accept 🌱"
+              label="Accept"
               onPress={handleAccept}
               loading={acceptInvite.isPending}
               disabled={declineOrCancel.isPending}

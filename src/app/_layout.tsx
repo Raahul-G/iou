@@ -16,6 +16,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { applyTheme } from "@/lib/theme";
 import { identifyUser, clearUser, trackOAuthRedirect, captureError } from "@/lib/analytics";
 import { OfflineBanner } from "@/components/ui/offline-banner";
+import { CelebrationOverlay } from "@/components/celebrations/celebration-overlay";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 
 const OAUTH_EXCHANGE_TIMEOUT_MS = 15_000;
@@ -304,6 +305,7 @@ export default function RootLayout() {
       <AuthGuard />
       <OfflineBanner />
       <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }} />
+      <CelebrationOverlay />
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
     </QueryClientProvider>
   );

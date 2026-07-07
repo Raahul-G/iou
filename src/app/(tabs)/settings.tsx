@@ -19,6 +19,7 @@ import { captureError } from "@/lib/analytics";
 import { queryClient } from "@/lib/query-client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Icon, IconBadge } from "@/components/ui/icon";
 
 type ThemeOption = "system" | "light" | "dark";
 
@@ -153,12 +154,10 @@ export default function Settings() {
                 className="w-20 h-20 rounded-full bg-sand"
               />
             ) : (
-              <View className="w-20 h-20 rounded-full bg-sand dark:bg-[#3D2B3D] items-center justify-center">
-                <Text className="text-3xl">👤</Text>
-              </View>
+              <IconBadge name="person" tone="muted" badgeSize={80} size={36} />
             )}
             <View className="absolute bottom-0 right-0 bg-brown-warm dark:bg-umber rounded-full w-7 h-7 items-center justify-center">
-              <Text className="text-xs">✏️</Text>
+              <Icon name="camera" size={14} tone="inverse" />
             </View>
           </View>
         </Pressable>
@@ -259,24 +258,31 @@ export default function Settings() {
           onPress={() => Linking.openURL("https://myiou.app/privacy")}
           className="px-4 py-4 flex-row items-center justify-between"
         >
-          <Text className="text-base text-brown-deep dark:text-offwhite">Privacy Policy</Text>
-          <Text className="text-brown-muted dark:text-[#8A7385]">›</Text>
+          <View className="flex-row items-center gap-3">
+            <Icon name="shield-checkmark-outline" size={18} tone="muted" />
+            <Text className="text-base text-brown-deep dark:text-offwhite">Privacy Policy</Text>
+          </View>
+          <Icon name="chevron-forward" size={15} tone="muted" />
         </Pressable>
         <View className="h-px bg-sand dark:bg-[#3D2B3D]" />
         <Pressable
           onPress={() => Linking.openURL("https://myiou.app/tos")}
           className="px-4 py-4 flex-row items-center justify-between"
         >
-          <Text className="text-base text-brown-deep dark:text-offwhite">Terms of Service</Text>
-          <Text className="text-brown-muted dark:text-[#8A7385]">›</Text>
+          <View className="flex-row items-center gap-3">
+            <Icon name="document-text-outline" size={18} tone="muted" />
+            <Text className="text-base text-brown-deep dark:text-offwhite">Terms of Service</Text>
+          </View>
+          <Icon name="chevron-forward" size={15} tone="muted" />
         </Pressable>
       </View>
 
       {/* Logout */}
       <Pressable
         onPress={handleLogout}
-        className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#3D2B3D] items-center"
+        className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#3D2B3D] flex-row items-center justify-center gap-2"
       >
+        <Icon name="log-out-outline" size={18} tone="danger" />
         <Text className="text-base font-semibold text-red-500">Log out</Text>
       </Pressable>
 

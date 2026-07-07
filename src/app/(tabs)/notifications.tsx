@@ -23,7 +23,9 @@ import {
   useMarkAllRead,
   type AppNotification,
 } from "@/hooks/use-notifications";
-import { NOTIF_ICONS } from "@/constants/app";
+import { NOTIF_ICON_GLYPHS } from "@/constants/app";
+import { Icon, IconBadge, type IconName } from "@/components/ui/icon";
+import { celebrate } from "@/store/celebration.store";
 import { captureError } from "@/lib/analytics";
 
 function RequestCard({
@@ -47,9 +49,7 @@ function RequestCard({
             className="w-11 h-11 rounded-full bg-sand"
           />
         ) : (
-          <View className="w-11 h-11 rounded-full bg-sand dark:bg-[#3D2B3D] items-center justify-center">
-            <Text className="text-lg">👤</Text>
-          </View>
+          <IconBadge name="person" tone="muted" badgeSize={44} />
         )}
         <View className="flex-1">
           <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
@@ -91,7 +91,7 @@ function NotifCard({
   notif: AppNotification;
   onPress: () => void;
 }) {
-  const icon = NOTIF_ICONS[notif.type] ?? "🔔";
+  const glyph = NOTIF_ICON_GLYPHS[notif.type] ?? { icon: "notifications", tint: "muted" as const };
   const timeAgo = (() => {
     // eslint-disable-next-line react-hooks/purity
     const diff = Date.now() - new Date(notif.created_at).getTime();
@@ -111,7 +111,12 @@ function NotifCard({
           : "bg-white dark:bg-bark-card border-sand dark:border-[#3D2B3D]"
       }`}
     >
-      <Text className="text-xl mt-0.5">{icon}</Text>
+      <IconBadge
+        name={glyph.icon as IconName}
+        tone={glyph.tint}
+        badgeSize={34}
+        badgeClassName={notif.is_read ? "bg-sand/40 dark:bg-[#3D2B3D]/60" : "bg-sand/70 dark:bg-[#3D2B3D]"}
+      />
       <View className="flex-1">
         <Text className="text-sm font-semibold text-brown-deep dark:text-offwhite leading-snug" numberOfLines={2}>
           {notif.title}
@@ -164,6 +169,11 @@ export default function Notifications() {
 
   const handleRespond = async (requestId: string, accept: boolean) => {
     await respond.mutateAsync({ requestId, accept });
+    if (accept) {
+      const req = (requests ?? []).find((r) => r.id === requestId);
+      const senderName = (req?.sender as { display_name?: string } | undefined)?.display_name;
+      celebrate("friend_added", { name: senderName?.split(" ")[0] });
+    }
   };
 
   const handleNotifPress = async (notif: AppNotification) => {
@@ -289,24 +299,25 @@ export default function Notifications() {
       keyboardDismissMode="on-drag"
     >
       <Text className="text-2xl font-semibold text-brown-deep dark:text-offwhite">
-        Notifications
+        Activity
       </Text>
 
       {error ? (
-        <View className="items-center mt-20 gap-2">
-          <Text className="text-4xl">⚠️</Text>
+        <View className="items-center mt-20 gap-3">
+          <IconBadge name="cloud-offline-outline" tone="muted" badgeSize={56} />
           <Text className="text-base font-medium text-brown-deep dark:text-offwhite">
             {"Couldn't load notifications"}
           </Text>
-          <Pressable onPress={refetch} className="mt-1">
-            <Text className="text-sm text-brown-warm dark:text-umber">Try again</Text>
+          <Pressable onPress={refetch} className="mt-1 flex-row items-center gap-1.5">
+            <Icon name="refresh" size={14} tone="accent" />
+            <Text className="text-sm text-brown-warm dark:text-umber font-medium">Try again</Text>
           </Pressable>
         </View>
       ) : isLoading ? (
         <ActivityIndicator className="mt-10" />
       ) : !hasAnything ? (
-        <View className="items-center mt-20 gap-2">
-          <Text className="text-4xl">🔔</Text>
+        <View className="items-center mt-20 gap-3">
+          <IconBadge name="checkmark-done-circle-outline" tone="accent" badgeSize={56} badgeClassName="bg-brown-warm/15 dark:bg-umber/20" />
           <Text className="text-base font-medium text-brown-deep dark:text-offwhite">
             All caught up
           </Text>

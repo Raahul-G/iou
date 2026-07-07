@@ -31,6 +31,27 @@ export const NOTIF_ICONS: Record<string, string> = {
   tree_dull: "🌿",
 };
 
+// Ionicons name + tint per notification type — used for in-app feed rows
+export const NOTIF_ICON_GLYPHS: Record<string, { icon: string; tint: "accent" | "success" | "muted" | "danger" }> = {
+  friend_request: { icon: "person-add", tint: "accent" },
+  friend_request_accepted: { icon: "people", tint: "success" },
+  iou_created: { icon: "mail", tint: "accent" },
+  iou_accepted: { icon: "thumbs-up", tint: "success" },
+  iou_declined: { icon: "close-circle", tint: "muted" },
+  iou_completion_requested: { icon: "hand-left", tint: "accent" },
+  iou_completion_rejected: { icon: "arrow-undo", tint: "muted" },
+  iou_completed: { icon: "checkmark-circle", tint: "success" },
+  partner_invite: { icon: "leaf", tint: "success" },
+  partner_invite_accepted: { icon: "leaf", tint: "success" },
+  wish_created: { icon: "sparkles", tint: "accent" },
+  wish_accepted: { icon: "water", tint: "accent" },
+  wish_not_right_now: { icon: "time", tint: "muted" },
+  wish_fulfilled: { icon: "gift", tint: "accent" },
+  wish_confirmed: { icon: "heart", tint: "success" },
+  wish_withdrawn: { icon: "remove-circle", tint: "muted" },
+  tree_dull: { icon: "rainy", tint: "muted" },
+};
+
 export const WISH_MOODS = [
   { key: "playful", label: "Playful", emoji: "🎉" },
   { key: "cozy", label: "Cozy", emoji: "🫶" },

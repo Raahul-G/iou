@@ -12,6 +12,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { useFriends, useSendFriendRequest } from "@/hooks/use-friends";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Icon, IconBadge } from "@/components/ui/icon";
 
 type FoundUser = {
   id: string;
@@ -87,7 +88,8 @@ export default function SearchScreen() {
     <View className="flex-1 bg-cream dark:bg-bark">
       {/* Header */}
       <View className="flex-row items-center gap-3 px-5 pb-4 border-b border-sand dark:border-[#3D2B3D]" style={{ paddingTop: insets.top + 16 }}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
+        <Pressable onPress={() => router.back()} hitSlop={8} className="flex-row items-center gap-1" accessibilityRole="button" accessibilityLabel="Go back">
+          <Icon name="chevron-back" size={18} tone="accent" />
           <Text className="text-base text-brown-warm dark:text-umber">Back</Text>
         </Pressable>
         <Text className="text-lg font-semibold text-brown-deep dark:text-offwhite">
@@ -118,7 +120,8 @@ export default function SearchScreen() {
         )}
 
         {result === "not-found" && (
-          <View className="rounded-xl bg-sand/50 dark:bg-bark-card px-4 py-5 items-center gap-1">
+          <View className="rounded-xl bg-sand/50 dark:bg-bark-card px-4 py-5 items-center gap-2">
+            <IconBadge name="search" tone="muted" badgeSize={44} />
             <Text className="text-base font-medium text-brown-deep dark:text-offwhite">
               No user found
             </Text>
@@ -137,9 +140,7 @@ export default function SearchScreen() {
                   className="w-12 h-12 rounded-full bg-sand"
                 />
               ) : (
-                <View className="w-12 h-12 rounded-full bg-sand dark:bg-[#3D2B3D] items-center justify-center">
-                  <Text className="text-xl">👤</Text>
-                </View>
+                <IconBadge name="person" tone="muted" badgeSize={48} />
               )}
               <View>
                 <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
@@ -152,15 +153,17 @@ export default function SearchScreen() {
             </View>
 
             {isAlreadyFriend ? (
-              <View className="rounded-lg bg-green-50 dark:bg-green-950 px-4 py-3">
+              <View className="rounded-lg bg-green-50 dark:bg-green-950 px-4 py-3 flex-row items-center justify-center gap-2">
+                <Icon name="checkmark-circle" size={16} tone="success" />
                 <Text className="text-sm font-medium text-green-700 dark:text-green-400 text-center">
-                  Already friends ✓
+                  Already friends
                 </Text>
               </View>
             ) : requestSent ? (
-              <View className="rounded-lg bg-green-50 dark:bg-green-950 px-4 py-3">
+              <View className="rounded-lg bg-green-50 dark:bg-green-950 px-4 py-3 flex-row items-center justify-center gap-2">
+                <Icon name="paper-plane" size={15} tone="success" />
                 <Text className="text-sm font-medium text-green-700 dark:text-green-400 text-center">
-                  Friend request sent ✓
+                  Friend request sent
                 </Text>
               </View>
             ) : (
