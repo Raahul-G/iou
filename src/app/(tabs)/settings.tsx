@@ -20,6 +20,7 @@ import { queryClient } from "@/lib/query-client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Icon, IconBadge } from "@/components/ui/icon";
+import { PLAY_STORE_MARKET_URL, PLAY_STORE_WEB_URL } from "@/constants/app";
 
 type ThemeOption = "system" | "light" | "dark";
 
@@ -254,6 +255,30 @@ export default function Settings() {
 
       {/* About */}
       <View className="bg-white dark:bg-bark-card rounded-xl border border-sand dark:border-[#3D2B3D] overflow-hidden">
+        <Pressable
+          onPress={async () => {
+            // Prefer the Play app; fall back to the web listing (iOS/web/no Play)
+            if (Platform.OS === "android") {
+              try {
+                await Linking.openURL(PLAY_STORE_MARKET_URL);
+                return;
+              } catch {
+                // Play Store app unavailable — fall through to web
+              }
+            }
+            Linking.openURL(PLAY_STORE_WEB_URL);
+          }}
+          className="px-4 py-4 flex-row items-center justify-between"
+          accessibilityRole="button"
+          accessibilityLabel="Rate IOU on the Play Store"
+        >
+          <View className="flex-row items-center gap-3">
+            <Icon name="star" size={18} tone="accent" />
+            <Text className="text-base text-brown-deep dark:text-offwhite">Rate IOU on the Play Store</Text>
+          </View>
+          <Icon name="chevron-forward" size={15} tone="muted" />
+        </Pressable>
+        <View className="h-px bg-sand dark:bg-[#3D2B3D]" />
         <Pressable
           onPress={() => Linking.openURL("https://myiou.app/privacy")}
           className="px-4 py-4 flex-row items-center justify-between"

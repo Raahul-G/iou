@@ -7,9 +7,13 @@ import {
   type Celebration,
   type CelebrationKind,
 } from "@/store/celebration.store";
+import { maybeRequestReview } from "@/lib/app-review";
 import { burstRing, CenterPop, ParticleBurst, type ParticleSpec } from "./particles";
 
 const AUTO_DISMISS_MS = 2800;
+
+// Success moments that qualify as "moment of delight" for the Play rating prompt
+const REVIEW_WORTHY: CelebrationKind[] = ["iou_completed", "wish_confirmed"];
 
 // Shared palette — same family as the tree and the app theme
 const C = {
@@ -227,11 +231,23 @@ function CelebrationCard({ celebration }: { celebration: Celebration }) {
 export function CelebrationOverlay() {
   const { current, dismiss } = useCelebrationStore();
 
+  // Both dismiss paths (timer + tap) route through here so the rating prompt
+  // can ride the tail of a completion celebration. maybeRequestReview enforces
+  // all its own gates — calling it optimistically is safe.
+  const handleDismiss = () => {
+    const kind = useCelebrationStore.getState().current?.kind;
+    dismiss();
+    if (kind && REVIEW_WORTHY.includes(kind)) maybeRequestReview();
+  };
+
   useEffect(() => {
     if (!current) return;
-    const timer = setTimeout(dismiss, AUTO_DISMISS_MS);
+    const timer = setTimeout(handleDismiss, AUTO_DISMISS_MS);
     return () => clearTimeout(timer);
-  }, [current, dismiss]);
+    // handleDismiss is stable in behavior (reads store at call time); omitting
+    // it avoids re-arming the timer every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current]);
 
   return (
     // A real Modal mounts on its own native window (iOS) / Dialog (Android),
@@ -242,7 +258,7 @@ export function CelebrationOverlay() {
       transparent
       animationType="none"
       statusBarTranslucent
-      onRequestClose={dismiss}
+      onRequestClose={handleDismiss}
     >
       {current && (
         <Animated.View
@@ -252,7 +268,7 @@ export function CelebrationOverlay() {
         >
           <Pressable
             style={StyleSheet.absoluteFill}
-            onPress={dismiss}
+            onPress={handleDismiss}
             accessibilityRole="button"
             accessibilityLabel="Dismiss celebration"
           />

@@ -311,6 +311,7 @@ export type Database = {
           display_name: string
           id: string
           notifications_enabled: boolean
+          onboarding_completed_at: string | null
           profile_pic_url: string | null
           theme_preference: string
           updated_at: string
@@ -320,6 +321,7 @@ export type Database = {
           display_name: string
           id: string
           notifications_enabled?: boolean
+          onboarding_completed_at?: string | null
           profile_pic_url?: string | null
           theme_preference?: string
           updated_at?: string
@@ -329,6 +331,7 @@ export type Database = {
           display_name?: string
           id?: string
           notifications_enabled?: boolean
+          onboarding_completed_at?: string | null
           profile_pic_url?: string | null
           theme_preference?: string
           updated_at?: string

@@ -18,6 +18,7 @@ import { identifyUser, clearUser, trackOAuthRedirect, captureError } from "@/lib
 import { OfflineBanner } from "@/components/ui/offline-banner";
 import { CelebrationOverlay } from "@/components/celebrations/celebration-overlay";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
+import { recordFirstUse } from "@/lib/app-review";
 
 const OAUTH_EXCHANGE_TIMEOUT_MS = 15_000;
 
@@ -285,6 +286,12 @@ function AuthGuard() {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   useFonts({ DancingScript_600SemiBold });
+
+  // Stamp the first-use date once — the rating prompt's "≥3 days of experience"
+  // gate is measured from this.
+  useEffect(() => {
+    recordFirstUse();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

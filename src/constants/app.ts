@@ -61,6 +61,10 @@ export const WISH_MOODS = [
   { key: "calm", label: "Calm", emoji: "🌿" },
 ];
 
+export const PLAY_STORE_PACKAGE = "com.fridayvision.iou";
+export const PLAY_STORE_MARKET_URL = `market://details?id=${PLAY_STORE_PACKAGE}`;
+export const PLAY_STORE_WEB_URL = `https://play.google.com/store/apps/details?id=${PLAY_STORE_PACKAGE}`;
+
 export const NOTIF_FETCH_LIMIT = 50;
 
 export const RESEND_COOLDOWN_SECS = 60;

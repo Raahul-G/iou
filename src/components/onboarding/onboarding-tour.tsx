@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Animated, { FadeIn, FadeOut, SlideInRight, ZoomIn } from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
 import { useAuthStore } from "@/store/auth.store";
+import { useUpdateProfile } from "@/hooks/use-profile";
 import { TreeFigure } from "@/components/tree/tree-figure";
 import { CenterPop, ParticleBurst, burstRing } from "@/components/celebrations/particles";
 import { captureError } from "@/lib/analytics";
@@ -105,18 +106,30 @@ const STEPS = [
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function OnboardingTour() {
-  const { user } = useAuthStore();
+  const { user, profile } = useAuthStore();
+  const updateProfile = useUpdateProfile();
   const [visible, setVisible] = useState(false);
   const [step, setStep] = useState(0);
 
   const storageKey = user ? `${STORAGE_PREFIX}:${user.id}` : null;
 
+  // The account (profiles.onboarding_completed_at) is the source of truth, so
+  // the tour is one-time per user — across reinstalls, ports, and devices.
+  // The device flag remains as an offline suppressor and pre-migration legacy.
   useEffect(() => {
-    if (!storageKey) return;
+    if (!storageKey || !profile) return; // wait for the profile before deciding
+    if (profile.onboarding_completed_at) return; // account has seen it
+
     let cancelled = false;
     AsyncStorage.getItem(storageKey)
       .then((done) => {
-        if (!cancelled && !done) setVisible(true);
+        if (cancelled) return;
+        if (done) {
+          // Completed on this device before the account flag existed — sync up
+          updateProfile.mutate({ onboarding_completed_at: new Date().toISOString() });
+          return;
+        }
+        setVisible(true);
       })
       .catch((err) => {
         // If storage is unreadable, skip the tour rather than nagging every launch
@@ -125,7 +138,10 @@ export function OnboardingTour() {
     return () => {
       cancelled = true;
     };
-  }, [storageKey]);
+    // updateProfile (useMutation result) is a new object every render — including
+    // it would re-run this effect constantly. Same pattern as notifications.tsx.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey, profile]);
 
   const finish = () => {
     setVisible(false);
@@ -134,6 +150,13 @@ export function OnboardingTour() {
         captureError(err instanceof Error ? err : new Error(String(err)), { flow: "onboarding_flag" })
       );
     }
+    updateProfile.mutate(
+      { onboarding_completed_at: new Date().toISOString() },
+      {
+        onError: (err) =>
+          captureError(err instanceof Error ? err : new Error(String(err)), { flow: "onboarding_flag" }),
+      }
+    );
   };
 
   const isLast = step === STEPS.length - 1;
