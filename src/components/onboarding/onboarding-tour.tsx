@@ -99,7 +99,7 @@ const STEPS = [
   {
     Art: TreeGrowthArt,
     title: "Grow your tree",
-    body: "Every friendship has a tree. Keep trading kindness and it thrives; go quiet and it dulls. Start by adding your first friend!",
+    body: "Completing an IOU earns 1 point. Confirming a wish earns 2. Points run on a 14-day rolling window — and to stay alive, neither of you can fall below half the other's score. Start by adding your first friend!",
   },
 ] as const;
 
