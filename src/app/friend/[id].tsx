@@ -28,6 +28,9 @@ import {
   type WishStatus,
 } from "@/hooks/use-wishes";
 import { Button } from "@/components/ui/button";
+import { Icon, IconBadge } from "@/components/ui/icon";
+import { TreeFigure } from "@/components/tree/tree-figure";
+import { celebrate } from "@/store/celebration.store";
 import { CATEGORY_EMOJI, WISH_MOODS } from "@/constants/app";
 
 const MOOD_EMOJI: Record<string, string> = Object.fromEntries(
@@ -64,11 +67,11 @@ function WishBubble({ wish }: { wish: Wish }) {
       <View className={`w-6 h-6 rounded-full items-center justify-center ${
         isConfirmed ? "bg-emerald-50 dark:bg-emerald-950/40" : "bg-sand dark:bg-[#3D2B3D]"
       }`}>
-        <Text className={`text-xs font-bold ${
-          isConfirmed ? "text-emerald-600 dark:text-emerald-400" : "text-brown-muted dark:text-[#8A7385]"
-        }`}>
-          {isConfirmed ? "✓" : "✕"}
-        </Text>
+        <Icon
+          name={isConfirmed ? "checkmark" : "close"}
+          size={13}
+          tone={isConfirmed ? "success" : "muted"}
+        />
       </View>
     </View>
   );
@@ -128,13 +131,11 @@ function IOURow({
               ? "bg-emerald-50 dark:bg-emerald-950/40"
               : "bg-sand dark:bg-[#3D2B3D]"
           }`}>
-            <Text className={`text-xs font-bold ${
-              isCompleted
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-brown-muted dark:text-[#8A7385]"
-            }`}>
-              {isCompleted ? "✓" : "✕"}
-            </Text>
+            <Icon
+              name={isCompleted ? "checkmark" : "close"}
+              size={13}
+              tone={isCompleted ? "success" : "muted"}
+            />
           </View>
         )}
       </View>
@@ -150,7 +151,7 @@ function IOURow({
       )}
       {iou.status === "completion_requested" && !iAmCreator && (
         <View className="flex-row gap-2">
-          <View className="flex-1"><Button label="Confirm ✓" onPress={() => onAction(iou.id, "completed")} /></View>
+          <View className="flex-1"><Button label="Confirm" onPress={() => onAction(iou.id, "completed")} /></View>
           <View className="flex-1"><Button label="Reject" variant="ghost" onPress={() => onAction(iou.id, "accepted")} /></View>
         </View>
       )}
@@ -222,12 +223,12 @@ export default function FriendDetail() {
 
   // ── Tree visual ───────────────────────────────────────────────────
   const isNew = scores?.all_time === 0;
-  const { emoji: treeEmoji, label: treeLabel } = friendTreeVisual(
+  const { label: treeLabel, stage: treeStage } = friendTreeVisual(
     treeLoading ? undefined : treeScore,
     isNew ?? true
   );
-  const myEmoji     = treeScore?.myEmoji     ?? "💧";
-  const friendEmoji = treeScore?.friendEmoji ?? "🌿";
+  const myIcon: "water" | "leaf"     = (treeScore?.myEmoji     ?? "💧") === "💧" ? "water" : "leaf";
+  const friendIcon: "water" | "leaf" = (treeScore?.friendEmoji ?? "🌿") === "💧" ? "water" : "leaf";
 
   // ── Wish role ─────────────────────────────────────────────────────
   const amCreator = !!activeWish && activeWish.creator_id === user?.id;
@@ -239,7 +240,10 @@ export default function FriendDetail() {
     catch (err: unknown) { setWishActionError(err instanceof Error ? err.message : "Something went wrong."); return false; }
   };
 
-  const handleWishAccept      = () => mutateWish({ wishId: activeWish!.id, friendshipId: id, action: "accept" });
+  const handleWishAccept = async () => {
+    const ok = await mutateWish({ wishId: activeWish!.id, friendshipId: id, action: "accept" });
+    if (ok) celebrate("wish_accepted", { name: friendFirst });
+  };
   const handleWishMarkDone    = () => mutateWish({ wishId: activeWish!.id, friendshipId: id, action: "mark_done" });
   const handleWishNotRightNow = async () => {
     if (!showDeclineInput) { setShowDeclineInput(true); return; }
@@ -257,13 +261,20 @@ export default function FriendDetail() {
   const handleWishConfirm = async () => {
     if (!showThankYouInput) { setShowThankYouInput(true); return; }
     const ok = await mutateWish({ wishId: activeWish!.id, friendshipId: id, action: "confirm", thank_you_note: thankYouNote.trim() || undefined });
-    if (ok) { setShowThankYouInput(false); setThankYouNote(""); }
+    if (ok) {
+      setShowThankYouInput(false);
+      setThankYouNote("");
+      celebrate("wish_confirmed", { points: 2, name: friendFirst });
+    }
   };
 
   // ── IOU helpers ───────────────────────────────────────────────────
   const handleIOUAction = async (iouId: string, status: IOU["status"]) => {
     setActionError(null);
-    try { await updateIOUStatus.mutateAsync({ iouId, status, friendshipId: id }); }
+    try {
+      await updateIOUStatus.mutateAsync({ iouId, status, friendshipId: id });
+      if (status === "completed") celebrate("iou_completed", { points: 1 });
+    }
     catch (err: unknown) { setActionError(err instanceof Error ? err.message : "Action failed."); }
   };
 
@@ -298,7 +309,8 @@ export default function FriendDetail() {
     >
       {/* ── Header ───────────────────────────────────────────────────── */}
       <View className="px-5 pb-6 border-b border-sand dark:border-[#3D2B3D] items-center" style={{ paddingTop: insets.top + 16 }}>
-        <Pressable onPress={() => router.back()} hitSlop={8} className="self-start mb-5" accessibilityRole="button" accessibilityLabel="Go back">
+        <Pressable onPress={() => router.back()} hitSlop={8} className="self-start mb-5 flex-row items-center gap-1" accessibilityRole="button" accessibilityLabel="Go back">
+          <Icon name="chevron-back" size={18} tone="accent" />
           <Text className="text-base text-brown-warm dark:text-umber">Back</Text>
         </Pressable>
 
@@ -351,7 +363,9 @@ export default function FriendDetail() {
             accessibilityLabel={`Edit nickname for ${displayName}`}
           >
             <Text className="text-2xl font-bold text-brown-deep dark:text-offwhite">{displayName}</Text>
-            <Text className="text-lg ml-3 opacity-50">✏️</Text>
+            <View className="ml-2.5 opacity-60">
+              <Icon name="pencil" size={16} tone="muted" />
+            </View>
           </Pressable>
         )}
       </View>
@@ -360,7 +374,7 @@ export default function FriendDetail() {
       {/* Zone 1 — Tree                                               */}
       {/* ════════════════════════════════════════════════════════════ */}
       <View className="items-center px-5 py-8 gap-3">
-        <Text style={{ fontSize: 64, lineHeight: 76 }}>{treeEmoji}</Text>
+        <TreeFigure stage={treeStage} size={160} />
         <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
           {treeLabel}
         </Text>
@@ -371,18 +385,20 @@ export default function FriendDetail() {
               <Text className="text-2xl font-bold text-brown-deep dark:text-offwhite">
                 {treeScore.myScore}
               </Text>
-              <Text className="text-xs text-brown-muted dark:text-[#8A7385]">
-                You {myEmoji}
-              </Text>
+              <View className="flex-row items-center gap-1">
+                <Text className="text-xs text-brown-muted dark:text-[#8A7385]">You</Text>
+                <Icon name={myIcon} size={11} color={myIcon === "water" ? "#7FB4D8" : "#7FAF6E"} />
+              </View>
             </View>
             <View className="bg-sand dark:bg-[#3D2B3D] my-3" style={{ width: StyleSheet.hairlineWidth }} />
             <View className="flex-1 items-center py-3 gap-0.5">
               <Text className="text-2xl font-bold text-brown-deep dark:text-offwhite">
                 {treeScore.friendScore}
               </Text>
-              <Text className="text-xs text-brown-muted dark:text-[#8A7385]">
-                {friendFirst} {friendEmoji}
-              </Text>
+              <View className="flex-row items-center gap-1">
+                <Text className="text-xs text-brown-muted dark:text-[#8A7385]">{friendFirst}</Text>
+                <Icon name={friendIcon} size={11} color={friendIcon === "water" ? "#7FB4D8" : "#7FAF6E"} />
+              </View>
             </View>
           </View>
         )}
@@ -401,18 +417,19 @@ export default function FriendDetail() {
         {/* Action pill */}
         <Pressable
           onPress={() => debouncedPush({ pathname: "/iou/new", params: { friendshipId: id, friendId, friendName: displayName } })}
-          className="items-center justify-center bg-brown-warm dark:bg-umber rounded-2xl py-3 active:opacity-75"
+          className="flex-row items-center justify-center gap-2 bg-brown-warm dark:bg-umber rounded-2xl py-3 active:opacity-75"
           accessibilityRole="button"
           accessibilityLabel="New IOU"
         >
-          <Text className="text-white text-sm font-semibold">+ New IOU</Text>
+          <Icon name="add-circle-outline" size={17} tone="inverse" />
+          <Text className="text-white text-sm font-semibold">New IOU</Text>
         </Pressable>
 
         {/* Celebration pill */}
         {scores && scores.this_month > 0 && (
           <View className="items-center">
             <View className="bg-brown-warm/15 dark:bg-umber/20 rounded-full px-5 py-2.5 flex-row items-center gap-2">
-              <Text>🎉</Text>
+              <Icon name="trophy" size={13} tone="accent" />
               <Text className="text-xs font-semibold text-brown-warm dark:text-umber">
                 {scores.this_month} IOU{scores.this_month !== 1 ? "s" : ""} completed this month
               </Text>
@@ -426,18 +443,19 @@ export default function FriendDetail() {
 
         {/* IOU list */}
         {iouError ? (
-          <View className="items-center mt-4 gap-2">
-            <Text className="text-4xl">⚠️</Text>
+          <View className="items-center mt-4 gap-3">
+            <IconBadge name="cloud-offline-outline" tone="muted" badgeSize={52} />
             <Text className="text-base font-medium text-brown-deep dark:text-offwhite">{"Couldn't load IOUs"}</Text>
-            <Pressable onPress={() => refetchIOUs()} className="mt-1">
-              <Text className="text-sm text-brown-warm dark:text-umber">Try again</Text>
+            <Pressable onPress={() => refetchIOUs()} className="mt-1 flex-row items-center gap-1.5">
+              <Icon name="refresh" size={14} tone="accent" />
+              <Text className="text-sm text-brown-warm dark:text-umber font-medium">Try again</Text>
             </Pressable>
           </View>
         ) : iousLoading ? (
           <ActivityIndicator className="mt-4" />
         ) : allIOUs.length === 0 ? (
           <View className="items-center gap-4 py-6">
-            <Text style={{ fontSize: 48 }}>🫶</Text>
+            <IconBadge name="checkmark-done" tone="accent" badgeSize={56} badgeClassName="bg-brown-warm/15 dark:bg-umber/20" />
             <View className="items-center gap-1">
               <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
                 All square for now.
@@ -526,7 +544,7 @@ export default function FriendDetail() {
             {/* Target actions */}
             {amTarget && activeWish.status === "active" && (
               <View className="gap-3">
-                <Button label="Accept ✓" onPress={handleWishAccept} loading={updateWish.isPending} />
+                <Button label="Accept" onPress={handleWishAccept} loading={updateWish.isPending} />
                 {showDeclineInput ? (
                   <View className="gap-2">
                     <TextInput
@@ -548,7 +566,7 @@ export default function FriendDetail() {
 
             {amTarget && activeWish.status === "on_hold" && (
               <View className="gap-2">
-                <Button label="Accept ✓" onPress={handleWishAccept} loading={updateWish.isPending} />
+                <Button label="Accept" onPress={handleWishAccept} loading={updateWish.isPending} />
                 <Text className="text-xs text-brown-muted dark:text-[#8A7385] text-center">
                   {'You said "not right now" \u2014 you can still accept.'}
                 </Text>
@@ -556,7 +574,7 @@ export default function FriendDetail() {
             )}
 
             {amTarget && activeWish.status === "accepted" && (
-              <Button label="Mark as done ✓" onPress={handleWishMarkDone} loading={updateWish.isPending} />
+              <Button label="Mark as done" onPress={handleWishMarkDone} loading={updateWish.isPending} />
             )}
 
             {amTarget && activeWish.status === "fulfilled" && (
@@ -584,12 +602,12 @@ export default function FriendDetail() {
                         className="bg-white dark:bg-bark-card border border-sand dark:border-[#3D2B3D] rounded-xl px-4 py-3 text-sm text-brown-deep dark:text-offwhite min-h-[72px]"
                       />
                       <View className="flex-row gap-2">
-                        <View className="flex-1"><Button label="Confirm ✓" onPress={handleWishConfirm} loading={updateWish.isPending} /></View>
+                        <View className="flex-1"><Button label="Confirm" onPress={handleWishConfirm} loading={updateWish.isPending} /></View>
                         <View className="flex-1"><Button label="Cancel" onPress={() => { setShowThankYouInput(false); setThankYouNote(""); }} variant="ghost" /></View>
                       </View>
                     </View>
                   ) : (
-                    <Button label="Confirm & thank 🎉" onPress={handleWishConfirm} loading={updateWish.isPending} />
+                    <Button label="Confirm & thank" onPress={handleWishConfirm} loading={updateWish.isPending} />
                   )
                 )}
 
@@ -623,18 +641,19 @@ export default function FriendDetail() {
         ) : (
           /* No active wish */
           <View className="items-center gap-4 py-4">
-            <Text style={{ fontSize: 48 }}>💌</Text>
+            <IconBadge name="mail-open-outline" tone="accent" badgeSize={56} badgeClassName="bg-brown-warm/15 dark:bg-umber/20" />
             <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center">
               No active wish. Make one for {friendFirst} to grant.
             </Text>
             <Pressable
               onPress={() => debouncedPush({ pathname: "/wish/new", params: wishNewParams })}
-              className="rounded-2xl px-6 py-3 bg-brown-warm dark:bg-umber active:opacity-75"
+              className="flex-row items-center gap-2 rounded-2xl px-6 py-3 bg-brown-warm dark:bg-umber active:opacity-75"
               style={styles.wishGlow}
               accessibilityRole="button"
               accessibilityLabel="Plant a wish"
             >
-              <Text className="text-sm font-semibold text-white">Plant a wish ✨</Text>
+              <Icon name="sparkles" size={15} tone="inverse" />
+              <Text className="text-sm font-semibold text-white">Plant a wish</Text>
             </Pressable>
 
             {wishHistoryLoading ? (

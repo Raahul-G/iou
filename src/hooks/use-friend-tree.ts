@@ -119,17 +119,19 @@ export function useFriendTree({
   return query;
 }
 
+export type TreeVisualStage = "seed" | "sprout" | "healthy" | "dull" | "stump";
+
 export function friendTreeVisual(
   score: FriendTreeScore | undefined,
   isNew: boolean
-): { emoji: string; label: string } {
-  if (!score) return { emoji: isNew ? "🌱" : "🌳", label: "Growing together" };
+): { emoji: string; label: string; stage: TreeVisualStage } {
+  if (!score) return { emoji: isNew ? "🌱" : "🌳", label: "Growing together", stage: isNew ? "seed" : "healthy" };
   switch (score.state) {
     case "alive":
-      return { emoji: isNew ? "🌱" : "🌳", label: isNew ? "Your tree is growing" : "Growing together" };
+      return { emoji: isNew ? "🌱" : "🌳", label: isNew ? "Your tree is growing" : "Growing together", stage: isNew ? "sprout" : "healthy" };
     case "dull":
-      return { emoji: "🌿", label: "Needs a little care" };
+      return { emoji: "🌿", label: "Needs a little care", stage: "dull" };
     case "dead":
-      return { emoji: isNew ? "🌱" : "🪵", label: isNew ? "Just getting started" : "Time for a fresh start" };
+      return { emoji: isNew ? "🌱" : "🪵", label: isNew ? "Just getting started" : "Time for a fresh start", stage: isNew ? "seed" : "stump" };
   }
 }

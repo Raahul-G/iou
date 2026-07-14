@@ -15,6 +15,7 @@ import {
   type PartnerRole,
 } from "@/hooks/use-partnerships";
 import { Button } from "@/components/ui/button";
+import { Icon, IconBadge } from "@/components/ui/icon";
 
 type RoleOption = {
   role: PartnerRole;
@@ -97,7 +98,7 @@ export default function PartnerInvite() {
             <ActivityIndicator className="mt-2" />
           ) : !friends || friends.length === 0 ? (
             <View className="items-center py-6 gap-2">
-              <Text className="text-3xl">🤝</Text>
+              <IconBadge name="people-outline" tone="muted" badgeSize={48} />
               <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center">
                 Add a friend first before planting a tree.
               </Text>
@@ -123,9 +124,7 @@ export default function PartnerInvite() {
                         className="w-10 h-10 rounded-full bg-sand"
                       />
                     ) : (
-                      <View className="w-10 h-10 rounded-full bg-sand dark:bg-[#3D2B3D] items-center justify-center">
-                        <Text className="text-base">👤</Text>
-                      </View>
+                      <IconBadge name="person" tone="muted" badgeSize={40} />
                     )}
                     <Text
                       className={`flex-1 text-base font-medium ${
@@ -137,7 +136,7 @@ export default function PartnerInvite() {
                       {label}
                     </Text>
                     {isSelected && (
-                      <Text className="text-white text-base">✓</Text>
+                      <Icon name="checkmark-circle" size={20} tone="inverse" />
                     )}
                   </Pressable>
                 );

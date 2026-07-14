@@ -1,30 +1,24 @@
-import { Platform, Text, type ColorValue } from "react-native";
+import { useColorScheme, type ColorValue } from "react-native";
 import { Tabs } from "expo-router";
-import { useColorScheme } from "react-native";
-import { SymbolView } from "expo-symbols";
+import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/colors";
 import { useUnreadCount } from "@/hooks/use-notifications";
 
 type ColorScheme = keyof typeof Colors;
+type IoniconName = keyof typeof Ionicons.glyphMap;
 
-type TabIconProps = {
-  symbol: string;
-  emoji: string;
-  color: ColorValue;
-  size: number;
-};
-
-function TabIcon({ symbol, emoji, color, size }: TabIconProps) {
-  if (Platform.OS === "ios") {
-    return (
-      <SymbolView
-        name={symbol as never}
-        size={size}
-        tintColor={color}
-      />
-    );
-  }
-  return <Text style={{ fontSize: size - 2, color, lineHeight: size }}>{emoji}</Text>;
+function tabIcon(active: IoniconName, inactive: IoniconName) {
+  return function TabIcon({
+    color,
+    size,
+    focused,
+  }: {
+    color: ColorValue;
+    size: number;
+    focused: boolean;
+  }) {
+    return <Ionicons name={focused ? active : inactive} size={size} color={color} />;
+  };
 }
 
 export default function TabsLayout() {
@@ -43,49 +37,30 @@ export default function TabsLayout() {
         },
         tabBarActiveTintColor: colors.tabBarActive,
         tabBarInactiveTintColor: colors.tabBarInactive,
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, size, focused }) => (
-            <TabIcon
-              symbol={focused ? "house.fill" : "house"}
-              emoji="🏠"
-              color={color}
-              size={size}
-            />
-          ),
+          tabBarIcon: tabIcon("home", "home-outline"),
         }}
       />
       <Tabs.Screen
         name="notifications"
         options={{
-          title: "Notifications",
+          title: "Activity",
           tabBarBadge: unreadCount && unreadCount > 0 ? unreadCount : undefined,
-          tabBarIcon: ({ color, size, focused }) => (
-            <TabIcon
-              symbol={focused ? "bell.fill" : "bell"}
-              emoji="🔔"
-              color={color}
-              size={size}
-            />
-          ),
+          tabBarBadgeStyle: { backgroundColor: colors.tabBarActive, color: "#fff" },
+          tabBarIcon: tabIcon("notifications", "notifications-outline"),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: "Settings",
-          tabBarIcon: ({ color, size, focused }) => (
-            <TabIcon
-              symbol={focused ? "gearshape.fill" : "gearshape"}
-              emoji="⚙️"
-              color={color}
-              size={size}
-            />
-          ),
+          tabBarIcon: tabIcon("settings", "settings-outline"),
         }}
       />
     </Tabs>

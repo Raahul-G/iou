@@ -12,6 +12,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCreateIOU } from "@/hooks/use-ious";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Icon } from "@/components/ui/icon";
+import { celebrate } from "@/store/celebration.store";
 import { CATEGORIES } from "@/constants/app";
 
 export default function NewIOU() {
@@ -45,6 +47,7 @@ export default function NewIOU() {
         category,
         note: note.trim() || undefined,
       });
+      celebrate("iou_sent", { name: friendName?.split(" ")[0] });
       router.back();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to create IOU.");
@@ -55,10 +58,11 @@ export default function NewIOU() {
     <View className="flex-1 bg-cream dark:bg-bark">
       {/* Header */}
       <View className="flex-row items-center gap-3 px-5 pb-4 border-b border-sand dark:border-[#3D2B3D]" style={{ paddingTop: insets.top + 16 }}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
+        <Pressable onPress={() => router.back()} hitSlop={8} className="flex-row items-center gap-1" accessibilityRole="button" accessibilityLabel="Cancel">
+          <Icon name="close" size={18} tone="accent" />
           <Text className="text-base text-brown-warm dark:text-umber">Cancel</Text>
         </Pressable>
-        <Text className="flex-1 text-lg font-semibold text-brown-deep dark:text-offwhite">
+        <Text className="flex-1 text-lg font-semibold text-brown-deep dark:text-offwhite text-center pr-16">
           New IOU
         </Text>
       </View>

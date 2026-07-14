@@ -14,6 +14,7 @@ export function useUpdateProfile() {
       theme_preference?: "light" | "dark" | "system";
       notifications_enabled?: boolean;
       profile_pic_url?: string;
+      onboarding_completed_at?: string;
     }) => {
       const userId = user?.id;
       if (!userId) throw new Error("Not authenticated");

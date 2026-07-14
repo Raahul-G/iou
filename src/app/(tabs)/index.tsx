@@ -14,6 +14,9 @@ import { useFriends, type FriendProfile } from "@/hooks/use-friends";
 import { useScores } from "@/hooks/use-ious";
 import { useFriendTree, friendTreeVisual } from "@/hooks/use-friend-tree";
 import { debouncedPush } from "@/lib/navigation";
+import { Icon, IconBadge } from "@/components/ui/icon";
+import { TreeFigure } from "@/components/tree/tree-figure";
+import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
 
 // ─── Friend card ──────────────────────────────────────────────────────────────
 
@@ -37,7 +40,7 @@ const FriendCard = memo(function FriendCard({ friend }: { friend: FriendProfile 
   };
 
   const isNew = !treeData || (treeData.myScore === 0 && treeData.friendScore === 0);
-  const { emoji: tree } = friendTreeVisual(treeData, isNew);
+  const { stage, label: treeLabel } = friendTreeVisual(treeData, isNew);
 
   return (
     <Pressable
@@ -56,7 +59,7 @@ const FriendCard = memo(function FriendCard({ friend }: { friend: FriendProfile 
       }
       className="flex-row items-center gap-3 bg-white dark:bg-bark-card rounded-xl px-4 py-3.5 border border-sand dark:border-[#3D2B3D] active:opacity-80"
       accessibilityRole="button"
-      accessibilityLabel={`${label}, ${statsText()}`}
+      accessibilityLabel={`${label}, ${statsText()}, tree status: ${treeLabel}`}
     >
       {/* Avatar */}
       {friend.profile_pic_url ? (
@@ -82,10 +85,10 @@ const FriendCard = memo(function FriendCard({ friend }: { friend: FriendProfile 
         </Text>
       </View>
 
-      {/* Tree state — right-aligned */}
-      <Text style={{ fontSize: 18 }}>{tree}</Text>
+      {/* Living tree state — right-aligned */}
+      <TreeFigure stage={stage} size={38} animated={false} />
 
-      <Text className="text-brown-muted dark:text-[#8A7385]">›</Text>
+      <Icon name="chevron-forward" size={16} tone="muted" />
     </Pressable>
   );
 });
@@ -104,79 +107,92 @@ export default function Dashboard() {
   const insets = useSafeAreaInsets();
 
   return (
-    <ScrollView
-      className="flex-1 bg-cream dark:bg-bark"
-      contentContainerClassName="px-5 pb-8 gap-6"
-      contentContainerStyle={{ paddingTop: insets.top + 16 }}
-      refreshControl={
-        <RefreshControl refreshing={isRefetching} onRefresh={refetchFriends} />
-      }
-      showsVerticalScrollIndicator={false}
-      keyboardDismissMode="on-drag"
-    >
-      {/* Header */}
-      <View className="flex-row items-center justify-between">
-        <View>
-          <Text className="text-3xl font-bold text-brown-deep dark:text-offwhite">
-            Hey, {profile?.display_name ?? "there"} 👋
-          </Text>
-          <Text className="text-sm text-brown-muted dark:text-[#7A6B8A] mt-0.5 tracking-wide">
-            Your IOUs at a glance
-          </Text>
-        </View>
-        <Pressable
-          onPress={() => debouncedPush("/search")}
-          className="bg-brown-warm dark:bg-umber rounded-full px-4 py-2"
-          accessibilityRole="button"
-          accessibilityLabel="Add friend"
-        >
-          <Text className="text-sm font-semibold text-white">+ Friend</Text>
-        </Pressable>
-      </View>
-
-      {/* Friends list */}
-      {error ? (
-        <View className="items-center mt-8 gap-2">
-          <Text className="text-4xl">⚠️</Text>
-          <Text className="text-base font-medium text-brown-deep dark:text-offwhite">
-            {"Couldn't load friends"}
-          </Text>
-          <Pressable onPress={() => refetchFriends()} className="mt-1">
-            <Text className="text-sm text-brown-warm dark:text-umber">Try again</Text>
-          </Pressable>
-        </View>
-      ) : friendsLoading ? (
-        <ActivityIndicator className="mt-6" />
-      ) : friends && friends.length > 0 ? (
-        <View className="gap-3">
-          <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
-            Friends
-          </Text>
-          {friends.map((f) => (
-            <FriendCard key={f.friendship_id} friend={f} />
-          ))}
-        </View>
-      ) : (
-        <View className="items-center mt-8 gap-3">
-          <Text className="text-5xl">🤝</Text>
-          <Text className="text-lg font-semibold text-brown-deep dark:text-offwhite">
-            No friends yet
-          </Text>
-          <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center leading-relaxed">
-            Add a friend to start trading IOUs and growing trees together.
-          </Text>
+    <View className="flex-1 bg-cream dark:bg-bark">
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="px-5 pb-8 gap-6"
+        contentContainerStyle={{ paddingTop: insets.top + 16 }}
+        refreshControl={
+          <RefreshControl refreshing={isRefetching} onRefresh={refetchFriends} />
+        }
+        showsVerticalScrollIndicator={false}
+        keyboardDismissMode="on-drag"
+      >
+        {/* Header */}
+        <View className="flex-row items-center justify-between">
+          <View className="flex-1 pr-3">
+            <Text className="text-3xl font-bold text-brown-deep dark:text-offwhite" numberOfLines={1}>
+              Hey, {profile?.display_name ?? "there"}
+            </Text>
+            <Text className="text-sm text-brown-muted dark:text-[#7A6B8A] mt-0.5 tracking-wide">
+              Your IOUs at a glance
+            </Text>
+          </View>
           <Pressable
             onPress={() => debouncedPush("/search")}
-            className="mt-2 bg-brown-warm dark:bg-umber rounded-full px-6 py-3"
+            className="flex-row items-center gap-1.5 bg-brown-warm dark:bg-umber rounded-full pl-3 pr-4 py-2 active:opacity-80"
             accessibilityRole="button"
-            accessibilityLabel="Add your first friend"
+            accessibilityLabel="Add friend"
           >
-            <Text className="text-sm font-semibold text-white">
-              Add your first friend
-            </Text>
+            <Icon name="person-add" size={14} tone="inverse" />
+            <Text className="text-sm font-semibold text-white">Friend</Text>
           </Pressable>
         </View>
-      )}
-    </ScrollView>
+
+        {/* Friends list */}
+        {error ? (
+          <View className="items-center mt-8 gap-3">
+            <IconBadge name="cloud-offline-outline" tone="muted" badgeSize={56} />
+            <Text className="text-base font-medium text-brown-deep dark:text-offwhite">
+              {"Couldn't load friends"}
+            </Text>
+            <Pressable
+              onPress={() => refetchFriends()}
+              className="flex-row items-center gap-1.5 mt-1"
+              accessibilityRole="button"
+              accessibilityLabel="Try again"
+            >
+              <Icon name="refresh" size={14} tone="accent" />
+              <Text className="text-sm text-brown-warm dark:text-umber font-medium">Try again</Text>
+            </Pressable>
+          </View>
+        ) : friendsLoading ? (
+          <ActivityIndicator className="mt-6" />
+        ) : friends && friends.length > 0 ? (
+          <View className="gap-3">
+            <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
+              Friends
+            </Text>
+            {friends.map((f) => (
+              <FriendCard key={f.friendship_id} friend={f} />
+            ))}
+          </View>
+        ) : (
+          <View className="items-center mt-8 gap-3">
+            <TreeFigure stage="seed" size={110} />
+            <Text className="text-lg font-semibold text-brown-deep dark:text-offwhite">
+              No friends yet
+            </Text>
+            <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center leading-relaxed px-6">
+              Add a friend to start trading IOUs and growing trees together.
+            </Text>
+            <Pressable
+              onPress={() => debouncedPush("/search")}
+              className="mt-2 flex-row items-center gap-2 bg-brown-warm dark:bg-umber rounded-full px-6 py-3 active:opacity-80"
+              accessibilityRole="button"
+              accessibilityLabel="Add your first friend"
+            >
+              <Icon name="person-add" size={15} tone="inverse" />
+              <Text className="text-sm font-semibold text-white">
+                Add your first friend
+              </Text>
+            </Pressable>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* First-run guided tour — renders nothing for returning users */}
+      <OnboardingTour />
+    </View>
   );
 }

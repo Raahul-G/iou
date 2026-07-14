@@ -11,6 +11,8 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCreateWish } from "@/hooks/use-wishes";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
+import { celebrate } from "@/store/celebration.store";
 import { WISH_MOODS } from "@/constants/app";
 
 export default function NewWish() {
@@ -34,6 +36,7 @@ export default function NewWish() {
     setError(null);
     try {
       await createWish.mutateAsync({ friendshipId, targetId, text: trimmed, mood });
+      celebrate("wish_sent", { name: friendName?.split(" ")[0] });
       router.back();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Could not create wish. Try again.");
@@ -47,12 +50,16 @@ export default function NewWish() {
     <View className="flex-1 bg-cream dark:bg-bark">
       {/* Header */}
       <View className="flex-row items-center gap-3 px-5 pb-4 border-b border-sand dark:border-[#3D2B3D]" style={{ paddingTop: insets.top + 16 }}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
+        <Pressable onPress={() => router.back()} hitSlop={8} className="flex-row items-center gap-1" accessibilityRole="button" accessibilityLabel="Cancel">
+          <Icon name="close" size={18} tone="accent" />
           <Text className="text-base text-brown-warm dark:text-umber">Cancel</Text>
         </Pressable>
-        <Text className="flex-1 text-lg font-semibold text-brown-deep dark:text-offwhite">
-          {friendName ? `Wish for ${friendName} ✨` : "Make a wish ✨"}
-        </Text>
+        <View className="flex-1 flex-row items-center justify-center gap-1.5 pr-16">
+          <Icon name="sparkles" size={15} tone="accent" />
+          <Text className="text-lg font-semibold text-brown-deep dark:text-offwhite" numberOfLines={1}>
+            {friendName ? `Wish for ${friendName}` : "Make a wish"}
+          </Text>
+        </View>
       </View>
 
       <ScrollView
@@ -115,7 +122,7 @@ export default function NewWish() {
         </View>
 
         <Button
-          label="Send wish 💌"
+          label="Send wish"
           onPress={handleCreate}
           loading={createWish.isPending}
           disabled={!text.trim() || overLimit}

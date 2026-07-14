@@ -15,6 +15,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Icon } from "@/components/ui/icon";
 
 export default function CreateProfile() {
   const { user, profile, setProfile } = useAuthStore();
@@ -186,7 +187,7 @@ export default function CreateProfile() {
                 />
               ) : (
                 <View className="h-24 w-24 items-center justify-center rounded-full border-2 border-dashed border-sand dark:border-[#4A354A] bg-white dark:bg-bark-card">
-                  <Text className="text-3xl">👤</Text>
+                  <Icon name="camera-outline" size={30} tone="muted" />
                 </View>
               )}
               {uploading && (
