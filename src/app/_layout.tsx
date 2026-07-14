@@ -7,8 +7,8 @@ import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import * as Linking from "expo-linking";
 import * as Sentry from "@sentry/react-native";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Platform, Pressable, Text, View, useColorScheme } from "react-native";
+import { QueryClientProvider, focusManager } from "@tanstack/react-query";
+import { AppState, Platform, Pressable, Text, View, useColorScheme } from "react-native";
 import { useFonts, DancingScript_600SemiBold } from "@expo-google-fonts/dancing-script";
 import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/query-client";
@@ -17,6 +17,7 @@ import { applyTheme } from "@/lib/theme";
 import { identifyUser, clearUser, trackOAuthRedirect, captureError } from "@/lib/analytics";
 import { OfflineBanner } from "@/components/ui/offline-banner";
 import { CelebrationOverlay } from "@/components/celebrations/celebration-overlay";
+import { useCelebrationStore } from "@/store/celebration.store";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { recordFirstUse } from "@/lib/app-review";
 
@@ -291,6 +292,21 @@ export default function RootLayout() {
   // gate is measured from this.
   useEffect(() => {
     recordFirstUse();
+  }, []);
+
+  // AppState lifecycle — two birds, one listener:
+  // 1. Dismiss any in-flight celebration when the app backgrounds so Fabric
+  //    never tries to re-mount particle views that still have a parent (crash fix).
+  // 2. Notify TanStack Query's focusManager so stale queries refetch automatically
+  //    when the user returns — without this, refetchOnWindowFocus is a no-op on mobile.
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (status) => {
+      focusManager.setFocused(status === "active");
+      if (status !== "active") {
+        useCelebrationStore.getState().dismiss();
+      }
+    });
+    return () => sub.remove();
   }, []);
 
   return (
