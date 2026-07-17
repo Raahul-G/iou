@@ -113,7 +113,7 @@ export default function SignIn() {
   // the sign-in form doesn't flash during the async transition to home.
   if (isExchangingOAuth) {
     return (
-      <View className="flex-1 items-center justify-center bg-auth-bg dark:bg-bark">
+      <View className="flex-1 items-center justify-center bg-cream dark:bg-bark">
         <ActivityIndicator size="large" color="#D4A5A5" />
       </View>
     );
@@ -177,6 +177,7 @@ export default function SignIn() {
             label="Sign in"
             onPress={handleSignIn}
             loading={loading}
+            disabled={!email || !password}
           />
 
           <Divider />

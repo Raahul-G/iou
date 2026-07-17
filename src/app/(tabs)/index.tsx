@@ -27,7 +27,6 @@ const FriendCard = memo(function FriendCard({ friend }: { friend: FriendProfile 
     friendshipId: friend.friendship_id,
     myId: user?.id ?? "",
     friendId: friend.friend_id,
-    isUserA: friend.is_user_a,
   });
   const label = friend.nickname || friend.display_name;
 
@@ -88,7 +87,7 @@ const FriendCard = memo(function FriendCard({ friend }: { friend: FriendProfile 
       {/* Living tree state — right-aligned */}
       <TreeFigure stage={stage} size={38} animated={false} />
 
-      <Icon name="chevron-forward" size={16} tone="muted" />
+      <Icon name="caret-right" size={16} tone="muted" />
     </Pressable>
   );
 });
@@ -134,7 +133,7 @@ export default function Dashboard() {
             accessibilityRole="button"
             accessibilityLabel="Add friend"
           >
-            <Icon name="person-add" size={14} tone="inverse" />
+            <Icon name="user-plus" size={14} tone="inverse" />
             <Text className="text-sm font-semibold text-white">Friend</Text>
           </Pressable>
         </View>
@@ -142,7 +141,7 @@ export default function Dashboard() {
         {/* Friends list */}
         {error ? (
           <View className="items-center mt-8 gap-3">
-            <IconBadge name="cloud-offline-outline" tone="muted" badgeSize={56} />
+            <IconBadge name="cloud-slash" tone="muted" badgeSize={56} />
             <Text className="text-base font-medium text-brown-deep dark:text-offwhite">
               {"Couldn't load friends"}
             </Text>
@@ -152,7 +151,7 @@ export default function Dashboard() {
               accessibilityRole="button"
               accessibilityLabel="Try again"
             >
-              <Icon name="refresh" size={14} tone="accent" />
+              <Icon name="arrow-clockwise" size={14} tone="accent" />
               <Text className="text-sm text-brown-warm dark:text-umber font-medium">Try again</Text>
             </Pressable>
           </View>
@@ -182,7 +181,7 @@ export default function Dashboard() {
               accessibilityRole="button"
               accessibilityLabel="Add your first friend"
             >
-              <Icon name="person-add" size={15} tone="inverse" />
+              <Icon name="user-plus" size={15} tone="inverse" />
               <Text className="text-sm font-semibold text-white">
                 Add your first friend
               </Text>

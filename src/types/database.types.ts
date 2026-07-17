@@ -173,7 +173,6 @@ export type Database = {
           message: string | null
           related_friendship_id: string | null
           related_iou_id: string | null
-          related_partnership_id: string | null
           related_user_id: string | null
           related_wish_id: string | null
           title: string
@@ -187,7 +186,6 @@ export type Database = {
           message?: string | null
           related_friendship_id?: string | null
           related_iou_id?: string | null
-          related_partnership_id?: string | null
           related_user_id?: string | null
           related_wish_id?: string | null
           title: string
@@ -201,7 +199,6 @@ export type Database = {
           message?: string | null
           related_friendship_id?: string | null
           related_iou_id?: string | null
-          related_partnership_id?: string | null
           related_user_id?: string | null
           related_wish_id?: string | null
           title?: string
@@ -224,13 +221,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "notifications_related_partnership_id_fkey"
-            columns: ["related_partnership_id"]
-            isOneToOne: false
-            referencedRelation: "partnerships"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "notifications_related_user_id_fkey"
             columns: ["related_user_id"]
             isOneToOne: false
@@ -247,58 +237,6 @@ export type Database = {
           {
             foreignKeyName: "notifications_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      partnerships: {
-        Row: {
-          activated_at: string | null
-          created_at: string
-          fertilizer_id: string
-          id: string
-          inviter_id: string
-          status: string
-          water_id: string
-        }
-        Insert: {
-          activated_at?: string | null
-          created_at?: string
-          fertilizer_id: string
-          id?: string
-          inviter_id: string
-          status?: string
-          water_id: string
-        }
-        Update: {
-          activated_at?: string | null
-          created_at?: string
-          fertilizer_id?: string
-          id?: string
-          inviter_id?: string
-          status?: string
-          water_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "partnerships_fertilizer_id_fkey"
-            columns: ["fertilizer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "partnerships_inviter_id_fkey"
-            columns: ["inviter_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "partnerships_water_id_fkey"
-            columns: ["water_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

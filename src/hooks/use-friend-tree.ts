@@ -7,8 +7,6 @@ export type FriendTreeScore = {
   myScore: number;
   friendScore: number;
   state: "alive" | "dull" | "dead";
-  myEmoji: "💧" | "🌿";
-  friendEmoji: "💧" | "🌿";
 };
 
 // ----------------------------------------------------------------
@@ -16,22 +14,15 @@ export type FriendTreeScore = {
 // and scoring rules as the partner tree:
 //   IOU completed  → creator  +1 pt
 //   Wish confirmed → target   +2 pts
-//
-// Emoji assignment is stable and deterministic:
-//   user_a (lower UUID in canonical order) → 💧
-//   user_b                                 → 🌿
-// isUserA comes from the friendships query in useFriends().
 // ----------------------------------------------------------------
 export function useFriendTree({
   friendshipId,
   myId,
   friendId,
-  isUserA,
 }: {
   friendshipId: string;
   myId: string;
   friendId: string;
-  isUserA: boolean;
 }) {
   const query = useQuery({
     queryKey: ["friend-tree", friendshipId, myId],
@@ -99,10 +90,7 @@ export function useFriendTree({
         prevState    !== null ? "dull"       :
         "dead";
 
-      const myEmoji:     "💧" | "🌿" = isUserA ? "💧" : "🌿";
-      const friendEmoji: "💧" | "🌿" = isUserA ? "🌿" : "💧";
-
-      return { myScore, friendScore, state, myEmoji, friendEmoji } as FriendTreeScore;
+      return { myScore, friendScore, state } as FriendTreeScore;
     },
   });
 

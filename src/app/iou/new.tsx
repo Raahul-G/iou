@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCreateIOU } from "@/hooks/use-ious";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Icon } from "@/components/ui/icon";
+import { Icon, type IconName } from "@/components/ui/icon";
 import { celebrate } from "@/store/celebration.store";
 import { CATEGORIES } from "@/constants/app";
 
@@ -59,7 +59,7 @@ export default function NewIOU() {
       {/* Header */}
       <View className="flex-row items-center gap-3 px-5 pb-4 border-b border-sand dark:border-[#3D2B3D]" style={{ paddingTop: insets.top + 16 }}>
         <Pressable onPress={() => router.back()} hitSlop={8} className="flex-row items-center gap-1" accessibilityRole="button" accessibilityLabel="Cancel">
-          <Icon name="close" size={18} tone="accent" />
+          <Icon name="x" size={18} tone="accent" />
           <Text className="text-base text-brown-warm dark:text-umber">Cancel</Text>
         </Pressable>
         <Text className="flex-1 text-lg font-semibold text-brown-deep dark:text-offwhite text-center pr-16">
@@ -113,7 +113,7 @@ export default function NewIOU() {
                     : "bg-white dark:bg-bark-card border-sand dark:border-[#3D2B3D]"
                 }`}
               >
-                <Text>{cat.emoji}</Text>
+                <Icon name={cat.icon as IconName} size={18} tone={category === cat.key ? "inverse" : "accent"} />
                 <Text
                   className={`text-sm font-medium ${
                     category === cat.key

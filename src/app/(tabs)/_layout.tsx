@@ -1,25 +1,10 @@
 import { useColorScheme, type ColorValue } from "react-native";
 import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { House, Bell, Gear } from "phosphor-react-native";
 import { Colors } from "@/constants/colors";
 import { useUnreadCount } from "@/hooks/use-notifications";
 
 type ColorScheme = keyof typeof Colors;
-type IoniconName = keyof typeof Ionicons.glyphMap;
-
-function tabIcon(active: IoniconName, inactive: IoniconName) {
-  return function TabIcon({
-    color,
-    size,
-    focused,
-  }: {
-    color: ColorValue;
-    size: number;
-    focused: boolean;
-  }) {
-    return <Ionicons name={focused ? active : inactive} size={size} color={color} />;
-  };
-}
 
 export default function TabsLayout() {
   const rawScheme = useColorScheme();
@@ -44,7 +29,9 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: tabIcon("home", "home-outline"),
+          tabBarIcon: ({ color, size, focused }: { color: ColorValue; size: number; focused: boolean }) => (
+            <House size={size} color={color as string} weight={focused ? "fill" : "regular"} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -53,14 +40,18 @@ export default function TabsLayout() {
           title: "Activity",
           tabBarBadge: unreadCount && unreadCount > 0 ? unreadCount : undefined,
           tabBarBadgeStyle: { backgroundColor: colors.tabBarActive, color: "#fff" },
-          tabBarIcon: tabIcon("notifications", "notifications-outline"),
+          tabBarIcon: ({ color, size, focused }: { color: ColorValue; size: number; focused: boolean }) => (
+            <Bell size={size} color={color as string} weight={focused ? "fill" : "regular"} />
+          ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: "Settings",
-          tabBarIcon: tabIcon("settings", "settings-outline"),
+          tabBarIcon: ({ color, size, focused }: { color: ColorValue; size: number; focused: boolean }) => (
+            <Gear size={size} color={color as string} weight={focused ? "fill" : "regular"} />
+          ),
         }}
       />
     </Tabs>

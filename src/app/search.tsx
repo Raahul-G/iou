@@ -25,6 +25,7 @@ export default function SearchScreen() {
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState("");
   const [searching, setSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [result, setResult] = useState<FoundUser | null | "not-found">(null);
   const [requestSent, setRequestSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +45,7 @@ export default function SearchScreen() {
     setError(null);
     setResult(null);
     setRequestSent(false);
+    setHasSearched(true);
     setSearching(true);
 
     try {
@@ -89,7 +91,7 @@ export default function SearchScreen() {
       {/* Header */}
       <View className="flex-row items-center gap-3 px-5 pb-4 border-b border-sand dark:border-[#3D2B3D]" style={{ paddingTop: insets.top + 16 }}>
         <Pressable onPress={() => router.back()} hitSlop={8} className="flex-row items-center gap-1" accessibilityRole="button" accessibilityLabel="Go back">
-          <Icon name="chevron-back" size={18} tone="accent" />
+          <Icon name="caret-left" size={18} tone="accent" />
           <Text className="text-base text-brown-warm dark:text-umber">Back</Text>
         </Pressable>
         <Text className="text-lg font-semibold text-brown-deep dark:text-offwhite">
@@ -115,13 +117,26 @@ export default function SearchScreen() {
           disabled={email.trim().length < 4}
         />
 
+        {!hasSearched && (
+          <View className="items-center gap-3 py-10">
+            <IconBadge name="user-plus" badgeSize={52} tone="accent"
+              badgeClassName="bg-brown-warm/15 dark:bg-umber/20" />
+            <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
+              Find your people
+            </Text>
+            <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center px-6">
+              Search by email to connect, then start trading IOUs and wishes.
+            </Text>
+          </View>
+        )}
+
         {error && (
           <Text className="text-sm text-red-500 dark:text-red-400">{error}</Text>
         )}
 
         {result === "not-found" && (
           <View className="rounded-xl bg-sand/50 dark:bg-bark-card px-4 py-5 items-center gap-2">
-            <IconBadge name="search" tone="muted" badgeSize={44} />
+            <IconBadge name="magnifying-glass" tone="muted" badgeSize={44} />
             <Text className="text-base font-medium text-brown-deep dark:text-offwhite">
               No user found
             </Text>
@@ -140,7 +155,7 @@ export default function SearchScreen() {
                   className="w-12 h-12 rounded-full bg-sand"
                 />
               ) : (
-                <IconBadge name="person" tone="muted" badgeSize={48} />
+                <IconBadge name="user" tone="muted" badgeSize={48} />
               )}
               <View>
                 <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
@@ -154,14 +169,14 @@ export default function SearchScreen() {
 
             {isAlreadyFriend ? (
               <View className="rounded-lg bg-green-50 dark:bg-green-950 px-4 py-3 flex-row items-center justify-center gap-2">
-                <Icon name="checkmark-circle" size={16} tone="success" />
+                <Icon name="check-circle" size={16} tone="success" />
                 <Text className="text-sm font-medium text-green-700 dark:text-green-400 text-center">
                   Already friends
                 </Text>
               </View>
             ) : requestSent ? (
               <View className="rounded-lg bg-green-50 dark:bg-green-950 px-4 py-3 flex-row items-center justify-center gap-2">
-                <Icon name="paper-plane" size={15} tone="success" />
+                <Icon name="paper-plane-right" size={15} tone="success" />
                 <Text className="text-sm font-medium text-green-700 dark:text-green-400 text-center">
                   Friend request sent
                 </Text>

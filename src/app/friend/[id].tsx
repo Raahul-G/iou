@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -28,13 +28,19 @@ import {
   type WishStatus,
 } from "@/hooks/use-wishes";
 import { Button } from "@/components/ui/button";
-import { Icon, IconBadge } from "@/components/ui/icon";
+import { Icon, IconBadge, type IconName } from "@/components/ui/icon";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { TreeFigure } from "@/components/tree/tree-figure";
 import { celebrate } from "@/store/celebration.store";
-import { CATEGORY_EMOJI, WISH_MOODS } from "@/constants/app";
+import { captureError } from "@/lib/analytics";
+import { supabase } from "@/lib/supabase";
+import { CATEGORIES, WISH_MOODS } from "@/constants/app";
 
-const MOOD_EMOJI: Record<string, string> = Object.fromEntries(
-  WISH_MOODS.map((m) => [m.key, m.emoji])
+const MOOD_ICON: Record<string, string> = Object.fromEntries(
+  WISH_MOODS.map((m) => [m.key, m.icon])
+);
+const CATEGORY_ICON: Record<string, string> = Object.fromEntries(
+  CATEGORIES.map((c) => [c.key, c.icon])
 );
 
 function creatorStatusLabel(status: WishStatus): string {
@@ -60,7 +66,7 @@ function WishBubble({ wish }: { wish: Wish }) {
       }`}
       style={isConfirmed ? undefined : { opacity: 0.6 }}
     >
-      <Text>{MOOD_EMOJI[wish.mood] ?? "💌"}</Text>
+      <Icon name={(MOOD_ICON[wish.mood] ?? "envelope-heart") as IconName} size={16} tone={isConfirmed ? "success" : "muted"} />
       <Text className="flex-1 text-sm text-brown-deep dark:text-offwhite" numberOfLines={1}>
         {wish.text}
       </Text>
@@ -68,7 +74,7 @@ function WishBubble({ wish }: { wish: Wish }) {
         isConfirmed ? "bg-emerald-50 dark:bg-emerald-950/40" : "bg-sand dark:bg-[#3D2B3D]"
       }`}>
         <Icon
-          name={isConfirmed ? "checkmark" : "close"}
+          name={isConfirmed ? "check" : "x"}
           size={13}
           tone={isConfirmed ? "success" : "muted"}
         />
@@ -89,7 +95,7 @@ function IOURow({
   onAction: (id: string, status: IOU["status"]) => void;
 }) {
   const iAmCreator = iou.creator_id === myId;
-  const emoji = iou.category ? (CATEGORY_EMOJI[iou.category] ?? "✨") : "✨";
+  const catIcon = (CATEGORY_ICON[iou.category ?? "other"] ?? "sparkle") as IconName;
   const isActive = ["pending", "accepted", "completion_requested"].includes(iou.status);
 
   const statusLabel = {
@@ -114,7 +120,7 @@ function IOURow({
       style={!isActive && !isCompleted ? { opacity: 0.6 } : undefined}
     >
       <View className="flex-row items-center gap-3">
-        <Text className="text-xl">{emoji}</Text>
+        <Icon name={catIcon} size={20} tone={isActive ? "accent" : "muted"} />
         <View className="flex-1">
           <Text className="text-sm font-semibold text-brown-deep dark:text-offwhite" numberOfLines={1}>
             {iou.title}
@@ -132,7 +138,7 @@ function IOURow({
               : "bg-sand dark:bg-[#3D2B3D]"
           }`}>
             <Icon
-              name={isCompleted ? "checkmark" : "close"}
+              name={isCompleted ? "check" : "x"}
               size={13}
               tone={isCompleted ? "success" : "muted"}
             />
@@ -190,7 +196,6 @@ export default function FriendDetail() {
     friendshipId: id ?? "",
     myId: user?.id ?? "",
     friendId: friendId ?? "",
-    isUserA,
   });
   const { data: activeWish, isLoading: wishLoading } = useActiveWish(id ?? "");
   const { data: wishHistory, isLoading: wishHistoryLoading } = useWishHistory(id ?? "");
@@ -214,6 +219,17 @@ export default function FriendDetail() {
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [iouPageLimit, setIouPageLimit] = useState(20);
   const [wishHistoryLimit, setWishHistoryLimit] = useState(3);
+  const [iouFilter, setIouFilter] = useState<"Active" | "Completed" | "All">("All");
+
+  // Fire onboarding nudge (24 h + 7 d) if no IOU has been logged yet.
+  // The RPC self-deduplicates — safe to call on every screen visit.
+  useEffect(() => {
+    if (!id) return;
+    supabase.rpc("maybe_notify_friend_onboarding", { p_friendship_id: id })
+      .then(({ error }) => {
+        if (error) captureError(error, { flow: "friend_onboarding_notify", friendshipId: id });
+      });
+  }, [id]);
 
   // Guard against missing route params or unauthenticated state
   if (!id || !friendId || !user) {
@@ -227,9 +243,6 @@ export default function FriendDetail() {
     treeLoading ? undefined : treeScore,
     isNew ?? true
   );
-  const myIcon: "water" | "leaf"     = (treeScore?.myEmoji     ?? "💧") === "💧" ? "water" : "leaf";
-  const friendIcon: "water" | "leaf" = (treeScore?.friendEmoji ?? "🌿") === "💧" ? "water" : "leaf";
-
   // ── Wish role ─────────────────────────────────────────────────────
   const amCreator = !!activeWish && activeWish.creator_id === user?.id;
   const amTarget  = !!activeWish && activeWish.target_id  === user?.id;
@@ -290,10 +303,15 @@ export default function FriendDetail() {
   };
 
   // ── IOU list ──────────────────────────────────────────────────────
-  const activeIOUs  = (ious ?? []).filter((i) => !["completed", "declined"].includes(i.status));
-  const historyIOUs = (ious ?? []).filter((i) => ["completed", "declined"].includes(i.status));
-  const allIOUs     = [...activeIOUs, ...historyIOUs];
-  const visibleIOUs = showAllHistory ? allIOUs.slice(0, iouPageLimit) : allIOUs.slice(0, 3);
+  const activeIOUs    = (ious ?? []).filter((i) => !["completed", "declined"].includes(i.status));
+  const completedIOUs = (ious ?? []).filter((i) => i.status === "completed");
+  const allIOUs       = [...activeIOUs, ...(ious ?? []).filter((i) => ["completed", "declined"].includes(i.status))];
+  const filteredIOUs  = iouFilter === "Active"
+    ? activeIOUs
+    : iouFilter === "Completed"
+    ? completedIOUs
+    : allIOUs;
+  const visibleIOUs = showAllHistory ? filteredIOUs.slice(0, iouPageLimit) : filteredIOUs.slice(0, 3);
 
   const displayName = currentNickname || name;
   const friendFirst = (displayName ?? "").split(" ")[0];
@@ -310,7 +328,7 @@ export default function FriendDetail() {
       {/* ── Header ───────────────────────────────────────────────────── */}
       <View className="px-5 pb-6 border-b border-sand dark:border-[#3D2B3D] items-center" style={{ paddingTop: insets.top + 16 }}>
         <Pressable onPress={() => router.back()} hitSlop={8} className="self-start mb-5 flex-row items-center gap-1" accessibilityRole="button" accessibilityLabel="Go back">
-          <Icon name="chevron-back" size={18} tone="accent" />
+          <Icon name="caret-left" size={18} tone="accent" />
           <Text className="text-base text-brown-warm dark:text-umber">Back</Text>
         </Pressable>
 
@@ -364,7 +382,7 @@ export default function FriendDetail() {
           >
             <Text className="text-2xl font-bold text-brown-deep dark:text-offwhite">{displayName}</Text>
             <View className="ml-2.5 opacity-60">
-              <Icon name="pencil" size={16} tone="muted" />
+              <Icon name="pencil-simple" size={16} tone="muted" />
             </View>
           </Pressable>
         )}
@@ -385,20 +403,14 @@ export default function FriendDetail() {
               <Text className="text-2xl font-bold text-brown-deep dark:text-offwhite">
                 {treeScore.myScore}
               </Text>
-              <View className="flex-row items-center gap-1">
-                <Text className="text-xs text-brown-muted dark:text-[#8A7385]">You</Text>
-                <Icon name={myIcon} size={11} color={myIcon === "water" ? "#7FB4D8" : "#7FAF6E"} />
-              </View>
+              <Text className="text-xs text-brown-muted dark:text-[#8A7385]">You</Text>
             </View>
             <View className="bg-sand dark:bg-[#3D2B3D] my-3" style={{ width: StyleSheet.hairlineWidth }} />
             <View className="flex-1 items-center py-3 gap-0.5">
               <Text className="text-2xl font-bold text-brown-deep dark:text-offwhite">
                 {treeScore.friendScore}
               </Text>
-              <View className="flex-row items-center gap-1">
-                <Text className="text-xs text-brown-muted dark:text-[#8A7385]">{friendFirst}</Text>
-                <Icon name={friendIcon} size={11} color={friendIcon === "water" ? "#7FB4D8" : "#7FAF6E"} />
-              </View>
+              <Text className="text-xs text-brown-muted dark:text-[#8A7385]">{friendFirst}</Text>
             </View>
           </View>
         )}
@@ -421,21 +433,29 @@ export default function FriendDetail() {
           accessibilityRole="button"
           accessibilityLabel="New IOU"
         >
-          <Icon name="add-circle-outline" size={17} tone="inverse" />
+          <Icon name="plus-circle" size={17} tone="inverse" weight="regular" />
           <Text className="text-white text-sm font-semibold">New IOU</Text>
         </Pressable>
 
-        {/* Celebration pill */}
+        {/* Achievement flat row */}
         {scores && scores.this_month > 0 && (
-          <View className="items-center">
-            <View className="bg-brown-warm/15 dark:bg-umber/20 rounded-full px-5 py-2.5 flex-row items-center gap-2">
-              <Icon name="trophy" size={13} tone="accent" />
-              <Text className="text-xs font-semibold text-brown-warm dark:text-umber">
-                {scores.this_month} IOU{scores.this_month !== 1 ? "s" : ""} completed this month
-              </Text>
-            </View>
+          <View className="flex-row items-center gap-2 px-1">
+            <Icon name="trophy" size={16} tone="accent" weight="duotone" />
+            <Text className="text-xs font-semibold text-brown-warm dark:text-umber">
+              {scores.this_month} IOU{scores.this_month !== 1 ? "s" : ""} completed this month
+            </Text>
           </View>
         )}
+
+        <SegmentedControl
+          options={["Active", "Completed", "All"]}
+          value={iouFilter}
+          onChange={(v) => {
+            setIouFilter(v as typeof iouFilter);
+            setShowAllHistory(false);
+            setIouPageLimit(20);
+          }}
+        />
 
         {actionError && (
           <Text className="text-sm text-red-500 dark:text-red-400">{actionError}</Text>
@@ -444,18 +464,18 @@ export default function FriendDetail() {
         {/* IOU list */}
         {iouError ? (
           <View className="items-center mt-4 gap-3">
-            <IconBadge name="cloud-offline-outline" tone="muted" badgeSize={52} />
+            <IconBadge name="cloud-slash" tone="muted" badgeSize={52} />
             <Text className="text-base font-medium text-brown-deep dark:text-offwhite">{"Couldn't load IOUs"}</Text>
             <Pressable onPress={() => refetchIOUs()} className="mt-1 flex-row items-center gap-1.5">
-              <Icon name="refresh" size={14} tone="accent" />
+              <Icon name="arrow-clockwise" size={14} tone="accent" />
               <Text className="text-sm text-brown-warm dark:text-umber font-medium">Try again</Text>
             </Pressable>
           </View>
         ) : iousLoading ? (
           <ActivityIndicator className="mt-4" />
-        ) : allIOUs.length === 0 ? (
+        ) : filteredIOUs.length === 0 ? (
           <View className="items-center gap-4 py-6">
-            <IconBadge name="checkmark-done" tone="accent" badgeSize={56} badgeClassName="bg-brown-warm/15 dark:bg-umber/20" />
+            <IconBadge name="check-square" tone="accent" badgeSize={56} badgeClassName="bg-brown-warm/15 dark:bg-umber/20" />
             <View className="items-center gap-1">
               <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
                 All square for now.
@@ -472,17 +492,17 @@ export default function FriendDetail() {
                 <IOURow key={iou.id} iou={iou} myId={user.id} onAction={handleIOUAction} />
               ))}
             </View>
-            {allIOUs.length > 3 && !showAllHistory && (
+            {filteredIOUs.length > 3 && !showAllHistory && (
               <Pressable onPress={() => { setShowAllHistory(true); setIouPageLimit(20); }} className="items-center py-2">
                 <Text className="text-sm text-brown-warm dark:text-umber font-medium">
-                  {`View all ${allIOUs.length} IOUs →`}
+                  {`View all ${filteredIOUs.length} IOUs →`}
                 </Text>
               </Pressable>
             )}
-            {showAllHistory && iouPageLimit < allIOUs.length && (
+            {showAllHistory && iouPageLimit < filteredIOUs.length && (
               <Pressable onPress={() => setIouPageLimit((v) => v + 20)} className="items-center py-2">
                 <Text className="text-sm text-brown-warm dark:text-umber font-medium">
-                  Show more ({allIOUs.length - iouPageLimit} remaining)
+                  Show more ({filteredIOUs.length - iouPageLimit} remaining)
                 </Text>
               </Pressable>
             )}
@@ -518,7 +538,7 @@ export default function FriendDetail() {
             {/* Wish card */}
             <View className="bg-white dark:bg-bark-card rounded-2xl px-4 py-5 border border-sand dark:border-[#3D2B3D] gap-3">
               <View className="flex-row items-center gap-2">
-                <Text style={{ fontSize: 22 }}>{MOOD_EMOJI[activeWish.mood] ?? "💌"}</Text>
+                <Icon name={(MOOD_ICON[activeWish.mood] ?? "envelope-heart") as IconName} size={22} tone="accent" />
                 <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
                   {amTarget ? `A wish from ${friendFirst}` : "Your wish"}
                 </Text>
@@ -534,10 +554,14 @@ export default function FriendDetail() {
                 <Text className="text-xs font-semibold uppercase tracking-wider text-brown-muted dark:text-[#8A7385]">
                   Their note
                 </Text>
-                <Text className="text-sm text-brown-deep dark:text-offwhite">
-                  {activeWish.decline_mood ? `${MOOD_EMOJI[activeWish.decline_mood]} ` : ""}
-                  {activeWish.decline_text}
-                </Text>
+                <View className="flex-row items-start gap-1.5">
+                  {activeWish.decline_mood && (
+                    <Icon name={(MOOD_ICON[activeWish.decline_mood] ?? "envelope-heart") as IconName} size={15} tone="muted" />
+                  )}
+                  <Text className="flex-1 text-sm text-brown-deep dark:text-offwhite">
+                    {activeWish.decline_text}
+                  </Text>
+                </View>
               </View>
             )}
 
@@ -641,7 +665,7 @@ export default function FriendDetail() {
         ) : (
           /* No active wish */
           <View className="items-center gap-4 py-4">
-            <IconBadge name="mail-open-outline" tone="accent" badgeSize={56} badgeClassName="bg-brown-warm/15 dark:bg-umber/20" />
+            <IconBadge name="envelope-open" tone="accent" badgeSize={56} badgeClassName="bg-brown-warm/15 dark:bg-umber/20" />
             <Text className="text-sm text-brown-muted dark:text-[#8A7385] text-center">
               No active wish. Make one for {friendFirst} to grant.
             </Text>
@@ -652,7 +676,7 @@ export default function FriendDetail() {
               accessibilityRole="button"
               accessibilityLabel="Plant a wish"
             >
-              <Icon name="sparkles" size={15} tone="inverse" />
+              <Icon name="sparkle" size={15} tone="inverse" />
               <Text className="text-sm font-semibold text-white">Plant a wish</Text>
             </Pressable>
 

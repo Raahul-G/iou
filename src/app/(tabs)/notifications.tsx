@@ -49,7 +49,7 @@ function RequestCard({
             className="w-11 h-11 rounded-full bg-sand"
           />
         ) : (
-          <IconBadge name="person" tone="muted" badgeSize={44} />
+          <IconBadge name="user" tone="muted" badgeSize={44} />
         )}
         <View className="flex-1">
           <Text className="text-base font-semibold text-brown-deep dark:text-offwhite">
@@ -304,12 +304,12 @@ export default function Notifications() {
 
       {error ? (
         <View className="items-center mt-20 gap-3">
-          <IconBadge name="cloud-offline-outline" tone="muted" badgeSize={56} />
+          <IconBadge name="cloud-slash" tone="muted" badgeSize={56} />
           <Text className="text-base font-medium text-brown-deep dark:text-offwhite">
             {"Couldn't load notifications"}
           </Text>
           <Pressable onPress={refetch} className="mt-1 flex-row items-center gap-1.5">
-            <Icon name="refresh" size={14} tone="accent" />
+            <Icon name="arrow-clockwise" size={14} tone="accent" />
             <Text className="text-sm text-brown-warm dark:text-umber font-medium">Try again</Text>
           </Pressable>
         </View>
@@ -317,7 +317,7 @@ export default function Notifications() {
         <ActivityIndicator className="mt-10" />
       ) : !hasAnything ? (
         <View className="items-center mt-20 gap-3">
-          <IconBadge name="checkmark-done-circle-outline" tone="accent" badgeSize={56} badgeClassName="bg-brown-warm/15 dark:bg-umber/20" />
+          <IconBadge name="check-square" tone="accent" badgeSize={56} badgeClassName="bg-brown-warm/15 dark:bg-umber/20" />
           <Text className="text-base font-medium text-brown-deep dark:text-offwhite">
             All caught up
           </Text>

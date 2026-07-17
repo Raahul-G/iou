@@ -45,7 +45,7 @@ export function Input({ label, error, hint, style, ...props }: InputProps) {
             style={{ position: "absolute", right: 12, top: 0, bottom: 0, justifyContent: "center" }}
           >
             <Icon
-              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              name={showPassword ? "eye-slash" : "eye"}
               size={20}
               tone="muted"
             />

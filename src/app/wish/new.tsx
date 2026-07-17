@@ -11,7 +11,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCreateWish } from "@/hooks/use-wishes";
 import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
+import { Icon, type IconName } from "@/components/ui/icon";
 import { celebrate } from "@/store/celebration.store";
 import { WISH_MOODS } from "@/constants/app";
 
@@ -51,11 +51,11 @@ export default function NewWish() {
       {/* Header */}
       <View className="flex-row items-center gap-3 px-5 pb-4 border-b border-sand dark:border-[#3D2B3D]" style={{ paddingTop: insets.top + 16 }}>
         <Pressable onPress={() => router.back()} hitSlop={8} className="flex-row items-center gap-1" accessibilityRole="button" accessibilityLabel="Cancel">
-          <Icon name="close" size={18} tone="accent" />
+          <Icon name="x" size={18} tone="accent" />
           <Text className="text-base text-brown-warm dark:text-umber">Cancel</Text>
         </Pressable>
         <View className="flex-1 flex-row items-center justify-center gap-1.5 pr-16">
-          <Icon name="sparkles" size={15} tone="accent" />
+          <Icon name="sparkle" size={15} tone="accent" />
           <Text className="text-lg font-semibold text-brown-deep dark:text-offwhite" numberOfLines={1}>
             {friendName ? `Wish for ${friendName}` : "Make a wish"}
           </Text>
@@ -111,7 +111,7 @@ export default function NewWish() {
                       : "bg-white dark:bg-bark-card border-sand dark:border-[#3D2B3D]"
                   }`}
                 >
-                  <Text>{m.emoji}</Text>
+                  <Icon name={m.icon as IconName} size={18} tone={isSelected ? "inverse" : "accent"} />
                   <Text className={`text-sm font-medium ${isSelected ? "text-white" : "text-brown-deep dark:text-offwhite"}`}>
                     {m.label}
                   </Text>

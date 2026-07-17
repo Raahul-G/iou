@@ -187,7 +187,7 @@ export default function CreateProfile() {
                 />
               ) : (
                 <View className="h-24 w-24 items-center justify-center rounded-full border-2 border-dashed border-sand dark:border-[#4A354A] bg-white dark:bg-bark-card">
-                  <Icon name="camera-outline" size={30} tone="muted" />
+                  <Icon name="camera" size={30} tone="muted" />
                 </View>
               )}
               {uploading && (

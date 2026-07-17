@@ -155,10 +155,10 @@ export default function Settings() {
                 className="w-20 h-20 rounded-full bg-sand"
               />
             ) : (
-              <IconBadge name="person" tone="muted" badgeSize={80} size={36} />
+              <IconBadge name="user" tone="muted" badgeSize={80} size={36} />
             )}
             <View className="absolute bottom-0 right-0 bg-brown-warm dark:bg-umber rounded-full w-7 h-7 items-center justify-center">
-              <Icon name="camera" size={14} tone="inverse" />
+              <Icon name="camera" size={14} tone="inverse" weight="duotone" />
             </View>
           </View>
         </Pressable>
@@ -273,10 +273,10 @@ export default function Settings() {
           accessibilityLabel="Rate IOU on the Play Store"
         >
           <View className="flex-row items-center gap-3">
-            <Icon name="star" size={18} tone="accent" />
+            <Icon name="star" size={18} tone="accent" weight="duotone" />
             <Text className="text-base text-brown-deep dark:text-offwhite">Rate IOU on the Play Store</Text>
           </View>
-          <Icon name="chevron-forward" size={15} tone="muted" />
+          <Icon name="caret-right" size={15} tone="muted" />
         </Pressable>
         <View className="h-px bg-sand dark:bg-[#3D2B3D]" />
         <Pressable
@@ -284,10 +284,10 @@ export default function Settings() {
           className="px-4 py-4 flex-row items-center justify-between"
         >
           <View className="flex-row items-center gap-3">
-            <Icon name="shield-checkmark-outline" size={18} tone="muted" />
+            <Icon name="shield-check" size={18} tone="muted" weight="regular" />
             <Text className="text-base text-brown-deep dark:text-offwhite">Privacy Policy</Text>
           </View>
-          <Icon name="chevron-forward" size={15} tone="muted" />
+          <Icon name="caret-right" size={15} tone="muted" />
         </Pressable>
         <View className="h-px bg-sand dark:bg-[#3D2B3D]" />
         <Pressable
@@ -295,10 +295,10 @@ export default function Settings() {
           className="px-4 py-4 flex-row items-center justify-between"
         >
           <View className="flex-row items-center gap-3">
-            <Icon name="document-text-outline" size={18} tone="muted" />
+            <Icon name="file-text" size={18} tone="muted" weight="regular" />
             <Text className="text-base text-brown-deep dark:text-offwhite">Terms of Service</Text>
           </View>
-          <Icon name="chevron-forward" size={15} tone="muted" />
+          <Icon name="caret-right" size={15} tone="muted" />
         </Pressable>
       </View>
 
@@ -307,7 +307,7 @@ export default function Settings() {
         onPress={handleLogout}
         className="bg-white dark:bg-bark-card rounded-xl px-4 py-4 border border-sand dark:border-[#3D2B3D] flex-row items-center justify-center gap-2"
       >
-        <Icon name="log-out-outline" size={18} tone="danger" />
+        <Icon name="sign-out" size={18} tone="danger" weight="regular" />
         <Text className="text-base font-semibold text-red-500">Log out</Text>
       </Pressable>
 

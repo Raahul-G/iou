@@ -149,6 +149,7 @@ export default function SignUp() {
             label="Create account"
             onPress={handleSignUp}
             loading={loading}
+            disabled={!email || !password || !confirmPassword}
           />
         </View>
 
