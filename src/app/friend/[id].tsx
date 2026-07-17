@@ -66,7 +66,7 @@ function WishBubble({ wish }: { wish: Wish }) {
       }`}
       style={isConfirmed ? undefined : { opacity: 0.6 }}
     >
-      <Icon name={(MOOD_ICON[wish.mood] ?? "envelope-heart") as IconName} size={16} tone={isConfirmed ? "success" : "muted"} />
+      <Icon name={(MOOD_ICON[wish.mood] ?? "envelope-heart") as IconName} size={16} tone="muted" />
       <Text className="flex-1 text-sm text-brown-deep dark:text-offwhite" numberOfLines={1}>
         {wish.text}
       </Text>
