@@ -435,6 +435,10 @@ export type Database = {
         Args: { p_friendship_id: string }
         Returns: undefined
       }
+      maybe_notify_friend_onboarding: {
+        Args: { p_friendship_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

@@ -24,7 +24,7 @@ export default function NewWish() {
 
   const createWish = useCreateWish();
   const [text, setText] = useState("");
-  const [mood, setMood] = useState(WISH_MOODS[0].key);
+  const [mood, setMood] = useState<typeof WISH_MOODS[number]["key"]>(WISH_MOODS[0].key);
   const [error, setError] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
