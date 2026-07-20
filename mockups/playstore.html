@@ -144,10 +144,14 @@
     /* Body copy */
     .body-copy {
       font-size: 34px;
-      font-weight: 400;
-      color: #5C2A2A;
+      font-weight: 600;
+      color: #140404;
       line-height: 1.52;
       max-width: 880px;
+      /* Warm white glow lifts text off the heart texture */
+      text-shadow:
+        0 0 28px rgba(255,230,230,0.90),
+        0 1px 4px  rgba(255,210,210,0.60);
     }
 
     /* ── Phone image area ───────────────────────────────────────── */
@@ -164,15 +168,17 @@
     }
 
     .phone-img {
-      height: 1240px;
+      height: 1100px;
       width: auto;
       display: block;
       flex-shrink: 0;
-      /* Rich warm shadow to pop against rose background */
+      /* Clip the page-background bleed at the phone's rounded corners.
+         Original border-radius: 54px at 820px tall → scaled to 1100px = 72px */
+      border-radius: 72px;
+      /* Subtle side shadow only — no bottom bleed */
       filter:
-        drop-shadow(0 32px 64px rgba(100,20,20,0.30))
-        drop-shadow(0 10px 24px rgba(0,0,0,0.18))
-        drop-shadow(0 2px 6px rgba(0,0,0,0.10));
+        drop-shadow(0 4px 16px rgba(100,20,20,0.18))
+        drop-shadow(0 1px 4px rgba(0,0,0,0.08));
     }
 
     /* ── Bottom tagline ─────────────────────────────────────────── */
@@ -194,12 +200,15 @@
     }
 
     .sub-tagline {
-      font-size: 26px;
-      font-weight: 500;
-      color: #7A3838;
-      letter-spacing: 0.22em;
+      font-size: 28px;
+      font-weight: 800;
+      color: #140404;
+      letter-spacing: 0.20em;
       margin-top: 14px;
       text-transform: uppercase;
+      text-shadow:
+        0 0 24px rgba(255,230,230,0.85),
+        0 1px 3px  rgba(255,210,210,0.50);
     }
   </style>
 </head>
@@ -232,7 +241,7 @@
         </div>
         <div class="headline">All your IOUs,<br>one place.</div>
         <div class="body-copy">
-          See every favour across every friendship — all at a glance.
+          Every favour, every friendship — all at a glance.
         </div>
       </div>
 
@@ -264,7 +273,7 @@
         </div>
         <div class="headline">Watch your<br>friendship bloom.</div>
         <div class="body-copy">
-          Every favour exchanged helps your living tree grow together.
+          Every favour exchanged makes your friendship tree grow.
         </div>
       </div>
 
@@ -296,7 +305,7 @@
         </div>
         <div class="headline">Log it<br>in seconds.</div>
         <div class="body-copy">
-          Coffee, lunch, a big favour — capture what matters in a tap.
+          Coffee, lunch, a favour — anything logged in a tap.
         </div>
       </div>
 
