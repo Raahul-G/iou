@@ -276,7 +276,18 @@ export default function Settings() {
             <Icon name="star" size={18} tone="accent" weight="duotone" />
             <Text className="text-base text-brown-deep dark:text-offwhite">Rate IOU on the Play Store</Text>
           </View>
-          <Icon name="caret-right" size={15} tone="muted" />
+          <Icon name="caret-right" size={15} tone="muted" weight="regular" />
+        </Pressable>
+        <View className="h-px bg-sand dark:bg-[#3D2B3D]" />
+        <Pressable
+          onPress={() => Linking.openURL("https://myiou.app/guide")}
+          className="px-4 py-4 flex-row items-center justify-between"
+        >
+          <View className="flex-row items-center gap-3">
+            <Icon name="question" size={18} tone="muted" weight="regular" />
+            <Text className="text-base text-brown-deep dark:text-offwhite">How to Use IOU</Text>
+          </View>
+          <Icon name="caret-right" size={15} tone="muted" weight="regular" />
         </Pressable>
         <View className="h-px bg-sand dark:bg-[#3D2B3D]" />
         <Pressable
@@ -287,7 +298,7 @@ export default function Settings() {
             <Icon name="shield-check" size={18} tone="muted" weight="regular" />
             <Text className="text-base text-brown-deep dark:text-offwhite">Privacy Policy</Text>
           </View>
-          <Icon name="caret-right" size={15} tone="muted" />
+          <Icon name="caret-right" size={15} tone="muted" weight="regular" />
         </Pressable>
         <View className="h-px bg-sand dark:bg-[#3D2B3D]" />
         <Pressable
@@ -298,7 +309,7 @@ export default function Settings() {
             <Icon name="file-text" size={18} tone="muted" weight="regular" />
             <Text className="text-base text-brown-deep dark:text-offwhite">Terms of Service</Text>
           </View>
-          <Icon name="caret-right" size={15} tone="muted" />
+          <Icon name="caret-right" size={15} tone="muted" weight="regular" />
         </Pressable>
       </View>
 

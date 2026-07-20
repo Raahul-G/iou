@@ -91,7 +91,7 @@ export default function SearchScreen() {
       {/* Header */}
       <View className="flex-row items-center gap-3 px-5 pb-4 border-b border-sand dark:border-[#3D2B3D]" style={{ paddingTop: insets.top + 16 }}>
         <Pressable onPress={() => router.back()} hitSlop={8} className="flex-row items-center gap-1" accessibilityRole="button" accessibilityLabel="Go back">
-          <Icon name="caret-left" size={18} tone="accent" />
+          <Icon name="caret-left" size={18} tone="accent" weight="regular" />
           <Text className="text-base text-brown-warm dark:text-umber">Back</Text>
         </Pressable>
         <Text className="text-lg font-semibold text-brown-deep dark:text-offwhite">

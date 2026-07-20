@@ -328,7 +328,7 @@ export default function FriendDetail() {
       {/* ── Header ───────────────────────────────────────────────────── */}
       <View className="px-5 pb-6 border-b border-sand dark:border-[#3D2B3D] items-center" style={{ paddingTop: insets.top + 16 }}>
         <Pressable onPress={() => router.back()} hitSlop={8} className="self-start mb-5 flex-row items-center gap-1" accessibilityRole="button" accessibilityLabel="Go back">
-          <Icon name="caret-left" size={18} tone="accent" />
+          <Icon name="caret-left" size={18} tone="accent" weight="regular" />
           <Text className="text-base text-brown-warm dark:text-umber">Back</Text>
         </Pressable>
 

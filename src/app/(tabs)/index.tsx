@@ -87,7 +87,7 @@ const FriendCard = memo(function FriendCard({ friend }: { friend: FriendProfile 
       {/* Living tree state — right-aligned */}
       <TreeFigure stage={stage} size={38} animated={false} />
 
-      <Icon name="caret-right" size={16} tone="muted" />
+      <Icon name="caret-right" size={16} tone="muted" weight="regular" />
     </Pressable>
   );
 });
