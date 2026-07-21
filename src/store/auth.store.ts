@@ -11,12 +11,14 @@ interface AuthState {
   isLoading: boolean;
   oauthError: string | null;
   isExchangingOAuth: boolean;
+  isPasswordRecovery: boolean;
 
   setSession: (session: Session | null) => void;
   setProfile: (profile: Profile | null) => void;
   setLoading: (loading: boolean) => void;
   setOAuthError: (error: string | null) => void;
   setExchangingOAuth: (exchanging: boolean) => void;
+  setPasswordRecovery: (value: boolean) => void;
   reset: () => void;
 }
 
@@ -27,6 +29,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
   oauthError: null,
   isExchangingOAuth: false,
+  isPasswordRecovery: false,
 
   setSession: (session) =>
     set({ session, user: session?.user ?? null }),
@@ -43,6 +46,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   setExchangingOAuth: (isExchangingOAuth) =>
     set({ isExchangingOAuth }),
 
+  setPasswordRecovery: (isPasswordRecovery) =>
+    set({ isPasswordRecovery }),
+
   reset: () =>
-    set({ session: null, user: null, profile: null, isLoading: false, oauthError: null, isExchangingOAuth: false }),
+    set({ session: null, user: null, profile: null, isLoading: false, oauthError: null, isExchangingOAuth: false, isPasswordRecovery: false }),
 }));

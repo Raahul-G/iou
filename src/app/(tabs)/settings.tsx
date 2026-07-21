@@ -12,6 +12,7 @@ import {
   useColorScheme,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { router } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
 import { useUpdateProfile, useUploadAvatar } from "@/hooks/use-profile";
@@ -25,7 +26,8 @@ import { PLAY_STORE_MARKET_URL, PLAY_STORE_WEB_URL } from "@/constants/app";
 type ThemeOption = "system" | "light" | "dark";
 
 export default function Settings() {
-  const { profile } = useAuthStore();
+  const { profile, user } = useAuthStore();
+  const isEmailUser = user?.identities?.some((id) => id.provider === "email") ?? false;
 
   const [displayName, setDisplayName] = useState(profile?.display_name ?? "");
   const [nameError, setNameError] = useState<string | null>(null);
@@ -252,6 +254,23 @@ export default function Settings() {
           <Text className="text-xs text-red-500">{notifError}</Text>
         )}
       </View>
+
+      {/* Change password — email users only */}
+      {isEmailUser && (
+        <View className="bg-white dark:bg-bark-card rounded-xl border border-sand dark:border-[#3D2B3D] overflow-hidden">
+          <Pressable
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onPress={() => router.push("/change-password" as any)}
+            className="px-4 py-4 flex-row items-center justify-between"
+          >
+            <View className="flex-row items-center gap-3">
+              <Icon name="key" size={18} tone="muted" weight="regular" />
+              <Text className="text-base text-brown-deep dark:text-offwhite">Change password</Text>
+            </View>
+            <Icon name="caret-right" size={15} tone="muted" weight="regular" />
+          </Pressable>
+        </View>
+      )}
 
       {/* About */}
       <View className="bg-white dark:bg-bark-card rounded-xl border border-sand dark:border-[#3D2B3D] overflow-hidden">

@@ -73,9 +73,9 @@ function AuthGuard() {
   const router = useRouter();
   const segments = useSegments();
   const {
-    session, isLoading,
+    session, isLoading, isPasswordRecovery,
     setSession, setLoading, setProfile, reset,
-    setOAuthError, setExchangingOAuth,
+    setOAuthError, setExchangingOAuth, setPasswordRecovery,
   } = useAuthStore();
 
   // Web only: check inactivity on hard refresh, track activity while active
@@ -202,6 +202,20 @@ function AuthGuard() {
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, newSession) => {
+        // Password recovery: verifyOtp({ type: "recovery" }) fires SIGNED_IN on web,
+        // PASSWORD_RECOVERY on native. In both cases, if isPasswordRecovery flag is set
+        // (raised by forgot-password.tsx before calling verifyOtp), navigate to the
+        // reset screen and block the route guard from redirecting to home.
+        if (_event === "PASSWORD_RECOVERY" || (_event === "SIGNED_IN" && useAuthStore.getState().isPasswordRecovery)) {
+          setSession(newSession);
+          setPasswordRecovery(true);
+          setLoading(false);
+          SplashScreen.hideAsync();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          router.replace("/(auth)/reset-password" as any);
+          return;
+        }
+
         // Synchronously update the session so the route guard and data queries
         // can fire immediately. Do NOT await anything before unlocking here —
         // if the profile fetch (below) hangs (e.g. Supabase token-refresh lock
@@ -271,15 +285,17 @@ function AuthGuard() {
     const inAuthGroup = segments[0] === "(auth)";
     // Allow staying on create-profile even when session exists
     const onCreateProfile = segments.at(1) === "create-profile";
+    // Allow staying on reset-password after PASSWORD_RECOVERY session is established
+    const onResetPassword = (segments.at(1) as string) === "reset-password";
 
     if (!session && !inAuthGroup) {
       router.replace("/(auth)/sign-in");
-    } else if (session && inAuthGroup && !onCreateProfile) {
+    } else if (session && inAuthGroup && !onCreateProfile && !onResetPassword && !isPasswordRecovery) {
       router.replace("/");
     }
     // router from expo-router is a stable singleton — safe to omit
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session, isLoading, segments]);
+  }, [session, isLoading, segments, isPasswordRecovery]);
 
   return null;
 }

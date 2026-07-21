@@ -13,35 +13,58 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+const isValidEmail = (v: string) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+
 export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<string | null>(null);
 
-  const validate = () => {
-    const next: Record<string, string> = {};
+  // "punish late" — only show red after the user has left a field
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const touch = (field: string) =>
+    setTouched((prev) => ({ ...prev, [field]: true }));
 
-    if (!email.trim()) next.email = "Email is required.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
-      next.email = "Enter a valid email address.";
+  // Derived validity
+  const emailOk = isValidEmail(email);
+  const passwordOk = password.length >= 8;
+  const confirmOk = confirmPassword.length > 0 && confirmPassword === password;
+  const isFormValid = emailOk && passwordOk && confirmOk;
 
-    if (!password) next.password = "Password is required.";
-    else if (password.length < 8)
-      next.password = "Password must be at least 8 characters.";
+  // Reward early (green on valid) / punish late (red only after blur)
+  const emailValidation = email.trim()
+    ? emailOk
+      ? { success: "Looks good" }
+      : touched.email
+      ? { error: "Enter a valid email address" }
+      : {}
+    : {};
 
-    if (!confirmPassword) next.confirmPassword = "Please confirm your password.";
-    else if (password !== confirmPassword)
-      next.confirmPassword = "Passwords don't match.";
+  const passwordValidation = password
+    ? passwordOk
+      ? { success: "Looks good" }
+      : touched.password
+      ? { error: "Must be at least 8 characters" }
+      : {}
+    : {};
 
-    setErrors(next);
-    return Object.keys(next).length === 0;
-  };
+  const confirmValidation = confirmPassword
+    ? confirmOk
+      ? { success: "Passwords match" }
+      : touched.confirm
+      ? { error: "Passwords don't match" }
+      : {}
+    : {};
 
   const handleSignUp = async () => {
-    if (!validate()) return;
+    // Mark all fields touched so any remaining errors become visible
+    setTouched({ email: true, password: true, confirm: true });
+    if (!isFormValid) return;
 
+    setFormError(null);
     setLoading(true);
 
     try {
@@ -50,12 +73,13 @@ export default function SignUp() {
       // Pre-check: if the email is already registered, stop early.
       // supabase.auth.signUp() silently succeeds for existing emails (enumeration
       // protection), which leaves the user stuck on the OTP screen with no code.
-      const { data: existing } = await supabase.rpc(
-        "find_user_by_email",
-        { search_email: trimmedEmail }
-      );
+      const { data: existing } = await supabase.rpc("find_user_by_email", {
+        search_email: trimmedEmail,
+      });
       if (existing && existing.length > 0) {
-        setErrors({ form: "An account with this email already exists. Sign in instead." });
+        setFormError(
+          "An account with this email already exists. Sign in instead."
+        );
         return;
       }
 
@@ -65,7 +89,7 @@ export default function SignUp() {
       });
 
       if (error) {
-        setErrors({ form: error.message });
+        setFormError(error.message);
         return;
       }
 
@@ -105,10 +129,10 @@ export default function SignUp() {
         </View>
 
         <View className="gap-4">
-          {errors.form && (
+          {formError && (
             <View className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-950">
               <Text className="text-sm text-red-600 dark:text-red-400">
-                {errors.form}
+                {formError}
               </Text>
             </View>
           )}
@@ -118,11 +142,12 @@ export default function SignUp() {
             placeholder="you@example.com"
             value={email}
             onChangeText={setEmail}
-            error={errors.email}
+            onBlur={() => touch("email")}
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
             autoCorrect={false}
+            {...emailValidation}
           />
 
           <Input
@@ -130,9 +155,10 @@ export default function SignUp() {
             placeholder="At least 8 characters"
             value={password}
             onChangeText={setPassword}
-            error={errors.password}
+            onBlur={() => touch("password")}
             secureTextEntry
             autoComplete="new-password"
+            {...passwordValidation}
           />
 
           <Input
@@ -140,9 +166,10 @@ export default function SignUp() {
             placeholder="Repeat your password"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
-            error={errors.confirmPassword}
+            onBlur={() => touch("confirm")}
             secureTextEntry
             autoComplete="new-password"
+            {...confirmValidation}
           />
 
           <Button
@@ -157,7 +184,12 @@ export default function SignUp() {
           <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
             Already have an account?
           </Text>
-          <Pressable onPress={() => router.back()} hitSlop={8} accessibilityRole="link" accessibilityLabel="Sign in to existing account">
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={8}
+            accessibilityRole="link"
+            accessibilityLabel="Sign in to existing account"
+          >
             <Text className="text-sm font-medium text-brown-warm dark:text-umber">
               Sign in
             </Text>

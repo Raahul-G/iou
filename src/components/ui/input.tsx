@@ -5,10 +5,11 @@ import { Icon } from "@/components/ui/icon";
 interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
+  success?: string;
   hint?: string;
 }
 
-export function Input({ label, error, hint, style, ...props }: InputProps) {
+export function Input({ label, error, success, hint, style, ...props }: InputProps) {
   const colorScheme = useColorScheme();
   const [showPassword, setShowPassword] = useState(false);
   const isPasswordField = !!props.secureTextEntry;
@@ -33,6 +34,8 @@ export function Input({ label, error, hint, style, ...props }: InputProps) {
             isPasswordField ? "pr-12" : "",
             error
               ? "border-red-400 dark:border-red-600"
+              : success
+              ? "border-green-500 dark:border-green-600"
               : "border-sand dark:border-[#4A354A]",
           ].join(" ")}
         />
@@ -53,11 +56,17 @@ export function Input({ label, error, hint, style, ...props }: InputProps) {
         )}
       </View>
       {error ? (
-        <Text className="text-xs text-red-500 dark:text-red-400">{error}</Text>
+        <View className="flex-row items-center gap-1">
+          <Icon name="x-circle" size={13} tone="danger" weight="fill" />
+          <Text className="text-xs text-red-500 dark:text-red-400">{error}</Text>
+        </View>
+      ) : success ? (
+        <View className="flex-row items-center gap-1">
+          <Icon name="check-circle" size={13} tone="success" weight="fill" />
+          <Text className="text-xs text-green-600 dark:text-green-400">{success}</Text>
+        </View>
       ) : hint ? (
-        <Text className="text-xs text-brown-muted dark:text-[#8A7385]">
-          {hint}
-        </Text>
+        <Text className="text-xs text-brown-muted dark:text-[#8A7385]">{hint}</Text>
       ) : null}
     </View>
   );

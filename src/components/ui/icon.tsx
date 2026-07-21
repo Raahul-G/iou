@@ -75,6 +75,7 @@ const ICON_MAP = {
   "check-square":            Ph.CheckSquare,
   "user-circle":             Ph.UserCircle,
   "question":                Ph.Question,
+  "key":                     Ph.Key,
   // Category icons
   "coffee":                  Ph.Coffee,
   "fork-knife":              Ph.ForkKnife,
