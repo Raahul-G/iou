@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -8,13 +9,12 @@ import {
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "@/lib/supabase";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { OtpInput } from "@/components/ui/otp-input";
 import { RESEND_COOLDOWN_SECS } from "@/constants/app";
 
 export default function Verify() {
   const { email } = useLocalSearchParams<{ email: string }>();
-  const [code, setCode] = useState("");
+  const [otpKey, setOtpKey] = useState(0); // increment to reset OTP boxes
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +35,6 @@ export default function Verify() {
   };
 
   useEffect(() => {
-    // Start initial cooldown so user doesn't spam resend immediately
     // eslint-disable-next-line react-hooks/set-state-in-effect
     startCooldown();
     return () => {
@@ -43,26 +42,20 @@ export default function Verify() {
     };
   }, []);
 
-  const handleVerify = async () => {
-    const trimmedCode = code.trim();
-
-    if (!trimmedCode || trimmedCode.length < 6) {
-      setError("Enter the verification code from your email.");
-      return;
-    }
-
+  const handleVerify = async (code: string) => {
     setError(null);
     setLoading(true);
 
     try {
       const { error } = await supabase.auth.verifyOtp({
         email,
-        token: trimmedCode,
+        token: code,
         type: "signup",
       });
 
       if (error) {
         setError(error.message);
+        setOtpKey((k) => k + 1); // reset boxes on failure
         return;
       }
 
@@ -88,6 +81,7 @@ export default function Verify() {
       if (error) {
         setError(error.message);
       } else {
+        setOtpKey((k) => k + 1); // clear boxes when new code is sent
         startCooldown();
       }
     } finally {
@@ -115,7 +109,7 @@ export default function Verify() {
           </Text>
         </View>
 
-        <View className="gap-4">
+        <View className="gap-6">
           {error && (
             <View className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-950">
               <Text className="text-sm text-red-600 dark:text-red-400">
@@ -124,46 +118,42 @@ export default function Verify() {
             </View>
           )}
 
-          <Input
-            label="Verification code"
-            placeholder="123456"
-            value={code}
-            onChangeText={(text) => setCode(text.replace(/\D/g, "").slice(0, 8))}
-            keyboardType="number-pad"
-            maxLength={8}
-            autoFocus
-            hint="Enter the code from your email"
+          <OtpInput
+            key={otpKey}
+            onComplete={handleVerify}
+            disabled={loading}
           />
 
-          <Button
-            label="Verify"
-            onPress={handleVerify}
-            loading={loading}
-            disabled={code.trim().length < 6}
-
-          />
+          {/* Loading indicator */}
+          {loading && (
+            <View className="items-center">
+              <ActivityIndicator size="small" color="#D4A5A5" />
+            </View>
+          )}
 
           {/* Resend */}
-          <View className="items-center">
-            {cooldown > 0 ? (
-              <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
-                Resend code in{" "}
-                <Text className="font-medium text-brown-deep dark:text-offwhite">
-                  {cooldown}s
+          {!loading && (
+            <View className="items-center">
+              {cooldown > 0 ? (
+                <Text className="text-sm text-brown-muted dark:text-[#8A7385]">
+                  Resend code in{" "}
+                  <Text className="font-medium text-brown-deep dark:text-offwhite">
+                    {cooldown}s
+                  </Text>
                 </Text>
-              </Text>
-            ) : (
-              <Pressable
-                onPress={handleResend}
-                disabled={resendLoading}
-                hitSlop={8}
-              >
-                <Text className="text-sm font-medium text-brown-warm dark:text-umber">
-                  {resendLoading ? "Sending…" : "Resend code"}
-                </Text>
-              </Pressable>
-            )}
-          </View>
+              ) : (
+                <Pressable
+                  onPress={handleResend}
+                  disabled={resendLoading}
+                  hitSlop={8}
+                >
+                  <Text className="text-sm font-medium text-brown-warm dark:text-umber">
+                    {resendLoading ? "Sending…" : "Resend code"}
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          )}
         </View>
 
         {/* Wrong email? */}

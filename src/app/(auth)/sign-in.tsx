@@ -31,7 +31,7 @@ export default function SignIn() {
   // oauthError: set by _layout.tsx deep-link handler if exchange fails
   // isExchangingOAuth: true from the moment the browser closes until exchange settles
   // Both surface to the user here so the Google button stays locked and errors are visible
-  const { oauthError, isExchangingOAuth, setOAuthError } = useAuthStore();
+  const { oauthError, isExchangingOAuth, setOAuthError, setPasswordRecovery } = useAuthStore();
 
   const handleSignIn = async () => {
     if (!email.trim() || !password) {
@@ -39,6 +39,9 @@ export default function SignIn() {
       return;
     }
 
+    // Clear any stale password-recovery flag so the SIGNED_IN event
+    // routes to home rather than the reset-password screen.
+    setPasswordRecovery(false);
     setError(null);
     setLoading(true);
 
@@ -172,6 +175,16 @@ export default function SignIn() {
             secureTextEntry
             autoComplete="current-password"
           />
+
+          <Pressable
+            onPress={() => router.push("/(auth)/forgot-password")}
+            className="self-end"
+            hitSlop={8}
+          >
+            <Text className="text-sm font-medium text-brown-warm dark:text-umber">
+              Forgot password?
+            </Text>
+          </Pressable>
 
           <Button
             label="Sign in"

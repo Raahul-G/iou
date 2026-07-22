@@ -35,11 +35,11 @@ No more awkward "remember when you said you'd…" moments. IOU keeps a shared, h
 ## Screenshots
 
 <div align="center">
-  <img src="public/guide/screenshots/login.png" alt="Login" width="18%" />
-  <img src="public/guide/screenshots/home.png" alt="Home" width="18%" />
-  <img src="public/guide/screenshots/friend.png" alt="Friend Profile" width="18%" />
-  <img src="public/guide/screenshots/iou.png" alt="IOUs" width="18%" />
-  <img src="public/guide/screenshots/wish.png" alt="Wishes" width="18%" />
+  <img src="public/guide/screenshots/Activity.png" alt="Activity" width="18%" />
+  <img src="public/guide/screenshots/Home.png" alt="Home" width="18%" />
+  <img src="public/guide/screenshots/Friend.png" alt="Friend Profile" width="18%" />
+  <img src="public/guide/screenshots/IOU.png" alt="IOUs" width="18%" />
+  <img src="public/guide/screenshots/Wish.png" alt="Wishes" width="18%" />
 </div>
 
 ---

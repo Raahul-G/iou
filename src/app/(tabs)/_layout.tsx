@@ -1,6 +1,6 @@
 import { useColorScheme, type ColorValue } from "react-native";
 import { Tabs } from "expo-router";
-import { House, Bell, Gear } from "phosphor-react-native";
+import { House, Bell, UserCircle } from "phosphor-react-native";
 import { Colors } from "@/constants/colors";
 import { useUnreadCount } from "@/hooks/use-notifications";
 
@@ -48,9 +48,9 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
+          title: "Profile",
           tabBarIcon: ({ color, size, focused }: { color: ColorValue; size: number; focused: boolean }) => (
-            <Gear size={size} color={color as string} weight={focused ? "fill" : "regular"} />
+            <UserCircle size={size} color={color as string} weight={focused ? "fill" : "regular"} />
           ),
         }}
       />

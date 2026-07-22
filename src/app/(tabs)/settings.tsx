@@ -12,6 +12,7 @@ import {
   useColorScheme,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { router } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth.store";
 import { useUpdateProfile, useUploadAvatar } from "@/hooks/use-profile";
@@ -25,7 +26,8 @@ import { PLAY_STORE_MARKET_URL, PLAY_STORE_WEB_URL } from "@/constants/app";
 type ThemeOption = "system" | "light" | "dark";
 
 export default function Settings() {
-  const { profile } = useAuthStore();
+  const { profile, user } = useAuthStore();
+  const isEmailUser = user?.identities?.some((id) => id.provider === "email") ?? false;
 
   const [displayName, setDisplayName] = useState(profile?.display_name ?? "");
   const [nameError, setNameError] = useState<string | null>(null);
@@ -253,6 +255,23 @@ export default function Settings() {
         )}
       </View>
 
+      {/* Change password — email users only */}
+      {isEmailUser && (
+        <View className="bg-white dark:bg-bark-card rounded-xl border border-sand dark:border-[#3D2B3D] overflow-hidden">
+          <Pressable
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onPress={() => router.push("/change-password" as any)}
+            className="px-4 py-4 flex-row items-center justify-between"
+          >
+            <View className="flex-row items-center gap-3">
+              <Icon name="key" size={18} tone="muted" weight="regular" />
+              <Text className="text-base text-brown-deep dark:text-offwhite">Change password</Text>
+            </View>
+            <Icon name="caret-right" size={15} tone="muted" weight="regular" />
+          </Pressable>
+        </View>
+      )}
+
       {/* About */}
       <View className="bg-white dark:bg-bark-card rounded-xl border border-sand dark:border-[#3D2B3D] overflow-hidden">
         <Pressable
@@ -276,7 +295,18 @@ export default function Settings() {
             <Icon name="star" size={18} tone="accent" weight="duotone" />
             <Text className="text-base text-brown-deep dark:text-offwhite">Rate IOU on the Play Store</Text>
           </View>
-          <Icon name="caret-right" size={15} tone="muted" />
+          <Icon name="caret-right" size={15} tone="muted" weight="regular" />
+        </Pressable>
+        <View className="h-px bg-sand dark:bg-[#3D2B3D]" />
+        <Pressable
+          onPress={() => Linking.openURL("https://myiou.app/guide")}
+          className="px-4 py-4 flex-row items-center justify-between"
+        >
+          <View className="flex-row items-center gap-3">
+            <Icon name="question" size={18} tone="muted" weight="regular" />
+            <Text className="text-base text-brown-deep dark:text-offwhite">How to Use IOU</Text>
+          </View>
+          <Icon name="caret-right" size={15} tone="muted" weight="regular" />
         </Pressable>
         <View className="h-px bg-sand dark:bg-[#3D2B3D]" />
         <Pressable
@@ -287,7 +317,7 @@ export default function Settings() {
             <Icon name="shield-check" size={18} tone="muted" weight="regular" />
             <Text className="text-base text-brown-deep dark:text-offwhite">Privacy Policy</Text>
           </View>
-          <Icon name="caret-right" size={15} tone="muted" />
+          <Icon name="caret-right" size={15} tone="muted" weight="regular" />
         </Pressable>
         <View className="h-px bg-sand dark:bg-[#3D2B3D]" />
         <Pressable
@@ -298,7 +328,7 @@ export default function Settings() {
             <Icon name="file-text" size={18} tone="muted" weight="regular" />
             <Text className="text-base text-brown-deep dark:text-offwhite">Terms of Service</Text>
           </View>
-          <Icon name="caret-right" size={15} tone="muted" />
+          <Icon name="caret-right" size={15} tone="muted" weight="regular" />
         </Pressable>
       </View>
 
