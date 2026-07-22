@@ -1,5 +1,8 @@
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import Constants from "expo-constants";
+
+const isExpoGo = Constants.executionEnvironment === "storeClient";
 
 type Variant = "primary" | "secondary" | "ghost";
 
@@ -51,32 +54,44 @@ export function Button({
         style={isDisabled ? { opacity: 0.4 } : undefined}
         className={className}
       >
-        {({ pressed }) => (
-          <LinearGradient
-            colors={pressed && !isDisabled ? GRADIENT_PRESSED : GRADIENT_ENABLED}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 12,
-              paddingVertical: 16,
-              paddingHorizontal: 24,
-              shadowColor: "#9e6060",
-              shadowOffset: { width: 0, height: 3 },
-              shadowOpacity: isDisabled ? 0 : 0.35,
-              shadowRadius: 6,
-              elevation: isDisabled ? 0 : 6,
-            }}
-          >
-            {loading ? (
-              <ActivityIndicator size="small" color="#ffffff" />
-            ) : (
-              <Text className="text-white text-base font-medium">{label}</Text>
-            )}
-          </LinearGradient>
-        )}
+        {({ pressed }) => {
+          const innerStyle = {
+            flexDirection: "row" as const,
+            alignItems: "center" as const,
+            justifyContent: "center" as const,
+            borderRadius: 12,
+            paddingVertical: 16,
+            paddingHorizontal: 24,
+            shadowColor: "#9e6060",
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: isDisabled ? 0 : 0.35,
+            shadowRadius: 6,
+            elevation: isDisabled ? 0 : 6,
+          };
+          const inner = (
+            <>
+              {loading ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <Text className="text-white text-base font-medium">{label}</Text>
+              )}
+            </>
+          );
+          return isExpoGo ? (
+            <View style={[innerStyle, { backgroundColor: pressed && !isDisabled ? "#A5646C" : "#C07E83" }]}>
+              {inner}
+            </View>
+          ) : (
+            <LinearGradient
+              colors={pressed && !isDisabled ? GRADIENT_PRESSED : GRADIENT_ENABLED}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={innerStyle}
+            >
+              {inner}
+            </LinearGradient>
+          );
+        }}
       </Pressable>
     );
   }

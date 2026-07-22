@@ -14,7 +14,7 @@
     "android": {
       "package": "com.fridayvision.iou",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 17,
+      "versionCode": 18,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/app-icon.png",
         "backgroundColor": "#fff1e4"
