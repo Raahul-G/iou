@@ -126,7 +126,7 @@ export default function ChangePassword() {
         style={{ paddingTop: insets.top + 12, paddingBottom: 12 }}
       >
         <Pressable onPress={() => router.back()} hitSlop={8} className="mr-3">
-          <Icon name="caret-left" size={22} tone="default" weight="regular" />
+          <Icon name="caret-left" size={18} tone="accent" weight="regular" />
         </Pressable>
         <Text className="text-lg font-semibold text-brown-deep dark:text-offwhite">
           Change password
