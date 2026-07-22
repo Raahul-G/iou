@@ -21,12 +21,12 @@ export function OtpInput({
 
   // Blink the cursor while focused
   useEffect(() => {
-    if (!focused) {
-      setCursorVisible(true);
-      return;
-    }
+    if (!focused) return;
     const interval = setInterval(() => setCursorVisible((v) => !v), 530);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      setCursorVisible(true);
+    };
   }, [focused]);
 
   const digits = value.split("");

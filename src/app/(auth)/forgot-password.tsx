@@ -152,8 +152,7 @@ export default function ForgotPassword() {
                 Forgot password?
               </Text>
               <Text className="mt-2 text-base leading-relaxed text-brown-muted dark:text-[#8A7385]">
-                Enter your email and we'll send you a code to reset your
-                password.
+                {"Enter your email and we\u2019ll send you a code to reset your password."}
               </Text>
             </View>
 

@@ -159,7 +159,7 @@ export default function ResetPassword() {
                   Password updated
                 </Text>
                 <Text className="text-base text-center text-brown-muted dark:text-[#8A7385]">
-                  You're all set. Sign in with your new password next time.
+                  {"You\u2019re all set. Sign in with your new password next time."}
                 </Text>
               </View>
             </View>
