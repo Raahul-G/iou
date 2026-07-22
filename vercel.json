@@ -3,7 +3,6 @@
     { "source": "/guide", "destination": "/guide/", "permanent": true }
   ],
   "rewrites": [
-    { "source": "/guide/:path*", "destination": "/guide/:path*" },
     { "source": "/(.*)", "destination": "/" }
   ]
 }
